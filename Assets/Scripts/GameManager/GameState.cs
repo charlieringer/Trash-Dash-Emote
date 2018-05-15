@@ -127,26 +127,6 @@ public class GameState : AState
     {
         if (m_Finished)
         {
-            //if we are finished, we check if advertisement is ready, allow to disable the button until it is ready
-#if UNITY_ADS
-            if (!m_AdsInitialised && Advertisement.IsReady(adsPlacementId))
-            {
-                adsForLifeButton.SetActive(true);
-                m_AdsInitialised = true;
-#if UNITY_ANALYTICS
-                AnalyticsEvent.AdOffer(adsRewarded, adsNetwork, adsPlacementId, new Dictionary<string, object>
-            {
-                { "level_index", PlayerData.instance.rank },
-                { "distance", TrackManager.instance == null ? 0 : TrackManager.instance.worldDistance },
-            });
-#endif
-            }
-            else if(!m_AdsInitialised)
-                adsForLifeButton.SetActive(false);
-#else
-            adsForLifeButton.SetActive(false); //Ads is disabled
-#endif
-
             return;
         }
 
@@ -315,10 +295,10 @@ public class GameState : AState
         yield return new WaitForSeconds(2.0f);
         if (currentModifier.OnRunEnd(this))
         {
-            if (trackManager.isRerun)
+           // if (trackManager.isRerun)
                 manager.SwitchState("GameOver");
-            else
-                OpenGameOverPopup();
+           // else
+            //    OpenGameOverPopup();
         }
 	}
 
