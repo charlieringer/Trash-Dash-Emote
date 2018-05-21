@@ -18,22 +18,15 @@ MonoBehaviour:
   zones:
   - length: 500
     prefabList:
-    - {fileID: 114000012892250662, guid: 2d4807022e73aa34ab8f01892dbdfe1d, type: 2}
-    - {fileID: 114000011246391626, guid: 81bf7d820e3d0554e9ea968eeba33052, type: 2}
-    - {fileID: 114000013030444836, guid: 9e0040302c7a83c4d8e1ddf3979d6979, type: 2}
-    - {fileID: 114000013025867904, guid: 0e145376c7d52444b97856849e2a7bd2, type: 2}
     - {fileID: 114000012865937526, guid: 2f8abb5887b4af046b2f7fe9190c9d1d, type: 2}
+    - {fileID: 114000013025867904, guid: 0e145376c7d52444b97856849e2a7bd2, type: 2}
     - {fileID: 114000013679160506, guid: 627ea187cfa7b524482f0725ce9ffafe, type: 2}
-    - {fileID: 114000011354089632, guid: 3a5b1ed81a7bde440aa6d2317adcd689, type: 2}
-    - {fileID: 114000013790891830, guid: 65d6a8c569ebabb48aa95414228089bc, type: 2}
-    - {fileID: 114000013954142872, guid: dcbeb2ef97131d241b111f35d4788477, type: 2}
-    - {fileID: 114000010789957526, guid: 544006c54b323e9419926850d7e3fbac, type: 2}
-    - {fileID: 114000013783906396, guid: 5d6fcbaf51bca6b4594f12ca78b10a69, type: 2}
-    - {fileID: 114000010073563378, guid: efcbfaf146228ad40ae6c878d7806d64, type: 2}
     - {fileID: 114000012009225790, guid: 03576c724d3dcac4690f6ede40e47639, type: 2}
     - {fileID: 114000013343287618, guid: 391abdb78f486ff4abd13845846e0f05, type: 2}
     - {fileID: 114000012851863062, guid: 9b7ee2db83af4fe4da3b2af7d258d635, type: 2}
     - {fileID: 114000012080738752, guid: adb7c187800cf1d4697c2ec26f0a4bd1, type: 2}
+    - {fileID: 114000011354089632, guid: 3a5b1ed81a7bde440aa6d2317adcd689, type: 2}
+    - {fileID: 114000013790891830, guid: 65d6a8c569ebabb48aa95414228089bc, type: 2}
     - {fileID: 114000013583860610, guid: 01466a005c28535479de3c39b3304e3f, type: 2}
     - {fileID: 114000011013335392, guid: 423b9549e9d84034aac50ab7e0459e77, type: 2}
     - {fileID: 114000012681689300, guid: 6d998870eb4591747a98ab06751e0227, type: 2}

@@ -25,7 +25,7 @@ public class PatrollingObstacle : Obstacle
 
     protected const float k_LaneOffsetToFullWidth = 2f;
 
-	public override void Spawn(TrackSegment segment, float t)
+	public override void Spawn(TrackSegment segment, float t, int l)
 	{
 		Vector3 position;
 		Quaternion rotation;

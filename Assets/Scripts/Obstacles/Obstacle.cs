@@ -9,7 +9,7 @@ public abstract class Obstacle : MonoBehaviour
 {
 	public AudioClip impactedSound;
 
-    public abstract void Spawn(TrackSegment segment, float t);
+	public abstract void Spawn(TrackSegment segment, float t, int l);
 
 	public virtual void Impacted()
 	{

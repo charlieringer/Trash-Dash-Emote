@@ -101,7 +101,7 @@ public class GameState : AState
         canvas.gameObject.SetActive(true);
         pauseMenu.gameObject.SetActive(false);
         wholeUI.gameObject.SetActive(true);
-        pauseButton.gameObject.SetActive(true);
+        //pauseButton.gameObject.SetActive(true);
         gameOverPopup.SetActive(false);
 
         if (!trackManager.isRerun)
@@ -136,7 +136,7 @@ public class GameState : AState
 
         if (chrCtrl.currentLife <= 0)
         {
-			pauseButton.gameObject.SetActive(false);
+			//pauseButton.gameObject.SetActive(false);
             chrCtrl.CleanConsumable();
             chrCtrl.character.animator.SetBool(s_DeadHash, true);
 			chrCtrl.characterCollider.koParticle.gameObject.SetActive(true);

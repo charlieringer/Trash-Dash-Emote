@@ -2,7 +2,7 @@
 
 public class AllLaneObstacle: Obstacle
 {
-	public override void Spawn(TrackSegment segment, float t)
+	public override void Spawn(TrackSegment segment, float t, int l)
 	{
 		Vector3 position;
 		Quaternion rotation;

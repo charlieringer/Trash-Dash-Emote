@@ -23,6 +23,7 @@ using UnityEngine.Analytics;
 /// </summary>
 public class TrackManager : MonoBehaviour
 {
+	int numbSegsMade = 0;
 	static public TrackManager instance { get { return s_Instance; } }
 	static protected TrackManager s_Instance;
 
@@ -33,9 +34,9 @@ public class TrackManager : MonoBehaviour
 
 	[Header("Character & Movements")]
 	public CharacterInputController characterController;
-	public float minSpeed = 7.0f;
-	public float maxSpeed = 12.0f;
-	public int speedStep = 4;
+	public float minSpeed = 10.0f;
+	public float maxSpeed = 18.0f;
+	public int speedStep = 8;
 	public float laneOffset = 1.0f;
 
 	public bool invincible = false;
@@ -64,6 +65,8 @@ public class TrackManager : MonoBehaviour
 
 	public bool isMoving {  get { return m_IsMoving; } }
 	public bool isRerun { get { return m_Rerun; } set { m_Rerun = value; } }
+
+	public Listener emotionListener;
 
 	protected float m_TimeToStart = -1.0f;
 
@@ -105,10 +108,31 @@ public class TrackManager : MonoBehaviour
     protected const float k_SegmentRemovalDistance = -30f;
     protected const float k_Acceleration = 0.2f;
 
+	//UCB1 Stuff
+	private float[,] exploreWeights;
+	private float[,] exploitWeights;
+
+	private List<float> currentSectionEngagementValues = new List<float>();
+	private List<float> currentSectionValenceValues = new List<float>();
+
+	private int playerID;
+	private bool isAdaptive = true;
+
     protected void Awake()
 	{
         m_ScoreAccum = 0.0f;
 		s_Instance = this;
+
+		int numbTrackSections = m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length;
+		exploreWeights = new float[numbTrackSections,numbTrackSections];
+		exploitWeights = new float[numbTrackSections,numbTrackSections];
+
+		for (int i = 0; i < numbTrackSections; i++) {
+			for (int j = 0; j < numbTrackSections; j++) {
+				exploreWeights [i,j] = 1;
+				exploitWeights [i,j] = 1;
+			}
+		}
     }
 
 	public void StartMove(bool isRestart = true)
@@ -245,6 +269,10 @@ public class TrackManager : MonoBehaviour
 
 	void Update ()
 	{
+
+		currentSectionEngagementValues.Add (emotionListener.currentEngagement);
+		currentSectionValenceValues.Add (emotionListener.currentValence);
+
         while (m_Segments.Count < k_DesiredSegmentCount)
 		{
 			SpawnNewSegment();
@@ -289,6 +317,7 @@ public class TrackManager : MonoBehaviour
 
 			// m_PastSegments are segment we already passed, we keep them to move them and destroy them later 
 			// but they aren't part of the game anymore 
+			updateExploitScoreForSegement(m_Segments[0]);
 			m_PastSegments.Add(m_Segments[0]);
 			m_Segments.RemoveAt(0);
 
@@ -398,10 +427,10 @@ public class TrackManager : MonoBehaviour
 
 	public void SpawnNewSegment()
 	{
-
-		int segmentUse = Random.Range(0, m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length);
-		if (segmentUse == m_PreviousSegment) segmentUse = (segmentUse + 1) % m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length;
-		segmentUse = 0;
+		numbSegsMade++;
+		int segmentUse = getNextSegment();
+		//if (segmentUse == m_PreviousSegment) segmentUse = (segmentUse + 1) % m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length;
+		//segmentUse = 7;
 		TrackSegment segmentToUse = m_CurrentThemeData.zones[m_CurrentZone].prefabList[segmentUse];
 		TrackSegment newSegment = Instantiate(segmentToUse, Vector3.zero, Quaternion.identity);
 
@@ -428,8 +457,8 @@ public class TrackManager : MonoBehaviour
 		newSegment.transform.position = pos;
 		newSegment.manager = this;
 
-		newSegment.transform.localScale = new Vector3((Random.value > 0.5f ? -1 : 1), 1, 1);
-		newSegment.objectRoot.localScale = new Vector3(1.0f/newSegment.transform.localScale.x, 1, 1);
+		//newSegment.transform.localScale = new Vector3((Random.value > 0.5f ? -1 : 1), 1, 1);
+		//newSegment.objectRoot.localScale = new Vector3(1.0f/newSegment.transform.localScale.x, 1, 1);
 
 		if (m_SafeSegementLeft <= 0)
 			SpawnObstacle(newSegment);
@@ -439,17 +468,59 @@ public class TrackManager : MonoBehaviour
 		m_Segments.Add(newSegment);
 	}
 
+	public int getNextSegment()
+	{
+
+		float totalVal = 0f;
+		foreach(float val in currentSectionValenceValues)
+		{
+			totalVal+=val;
+		}
+		totalVal /= currentSectionValenceValues.Count;
+
+		float totalEng = 0f;
+		foreach(float eng in currentSectionEngagementValues)
+		{
+			totalEng+=eng;
+		}
+		totalEng /= currentSectionEngagementValues.Count;
+
+		//TEST CODE FOR WRITING TO CSV
+		string outString= "";
+
+		outString += totalVal + "," + totalEng;
+		outString += "\n";
+
+
+
+		using (System.IO.StreamWriter file = 
+			new System.IO.StreamWriter("Data.csv", true))
+		{
+			file.WriteLine(outString);
+		}
+
+
+
+		currentSectionValenceValues = new List<float> ();
+		return Random.Range(0, m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length);
+	}
+
+	public void updateExploitScoreForSegement(TrackSegment s)
+	{
+		return; 
+	}
+
 
 	public void SpawnObstacle(TrackSegment segment)
 	{
-		if (segment.possibleObstacles.Length != 0)
+		if(segment.hasLowBarrier) segment.possibleObstacles[3].Spawn(segment, 0.5f, -1);
+		if(segment.hasHighBarrier) segment.possibleObstacles[2].Spawn(segment, 0.5f, -1);
+		for (int i = 0; i < segment.obstaclesPresent.Length; ++i)
 		{
-			for (int i = 0; i < segment.obstaclePositions.Length; ++i)
-			{
-				segment.possibleObstacles[Random.Range(0, segment.possibleObstacles.Length)].Spawn(segment, segment.obstaclePositions[i]);
-			}
+			if (segment.obstaclesPresent [i] == -1)
+				continue;
+			segment.possibleObstacles[segment.obstaclesPresent[i]].Spawn(segment, 0.5f, i-1);
 		}
-
 		SpawnCoinAndPowerup(segment);
 	}
 
@@ -457,10 +528,9 @@ public class TrackManager : MonoBehaviour
 	{
 		const float increment = 1.5f;
 		float currentWorldPos = 0.0f;
-		int currentLane = Random.Range(0,3);
+		int currentLane = segment.GetComponent<TrackSegment>().coinLane;
 
 		float powerupChance = Mathf.Clamp01(Mathf.Floor(m_TimeSincePowerup) * 0.5f * 0.001f);
-		float premiumChance = Mathf.Clamp01(Mathf.Floor(m_TimeSinceLastPremium) * 0.5f * 0.0001f);
 
 		while (currentWorldPos < segment.worldLength)
 		{
@@ -468,60 +538,29 @@ public class TrackManager : MonoBehaviour
 			Quaternion rot;
 			segment.GetPointAtInWorldUnit(currentWorldPos, out pos, out rot);
 
+			pos = pos + ((currentLane - 1) * laneOffset * (rot * Vector3.right));
 
-			bool laneValid = true;
-			int testedLane = currentLane;
-			while(Physics.CheckSphere(pos + ((testedLane - 1) * laneOffset * (rot*Vector3.right)), 0.4f, 1<<9))
+            GameObject toUse;
+			if (Random.value < powerupChance)
 			{
-				testedLane = (testedLane + 1) % 3;
-				if (currentLane == testedLane)
-				{
-                    // Couldn't find a valid lane.
-					laneValid = false;
-					break;
-				}
+                int picked = Random.Range(0, consumableDatabase.consumbales.Length);
+
+                //if the powerup can't be spawned, we don't reset the time since powerup to continue to have a high chance of picking one next track segment
+                if (consumableDatabase.consumbales[picked].canBeSpawned)
+                {
+                    // Spawn a powerup instead.
+                    m_TimeSincePowerup = 0.0f;
+                    powerupChance = 0.0f;
+
+                    toUse = Instantiate(consumableDatabase.consumbales[picked].gameObject, pos, rot) as GameObject;
+                    toUse.transform.SetParent(segment.transform, true);
+                }
 			}
-
-			currentLane = testedLane;
-
-			if(laneValid)
+			else
 			{
-				pos = pos + ((currentLane - 1) * laneOffset * (rot * Vector3.right));
-
-
-                GameObject toUse;
-				if (Random.value < powerupChance)
-				{
-                    int picked = Random.Range(0, consumableDatabase.consumbales.Length);
-
-                    //if the powerup can't be spawned, we don't reset the time since powerup to continue to have a high chance of picking one next track segment
-                    if (consumableDatabase.consumbales[picked].canBeSpawned)
-                    {
-                        // Spawn a powerup instead.
-                        m_TimeSincePowerup = 0.0f;
-                        powerupChance = 0.0f;
-
-                        toUse = Instantiate(consumableDatabase.consumbales[picked].gameObject, pos, rot) as GameObject;
-                        toUse.transform.SetParent(segment.transform, true);
-                    }
-				}
-				else if (Random.value < premiumChance)
-				{
-					m_TimeSinceLastPremium = 0.0f;
-					premiumChance = 0.0f;
-
-					toUse = Instantiate(currentTheme.premiumCollectible, pos, rot);
-					toUse.transform.SetParent(segment.transform, true);
-				}
-				else
-				{
-					toUse = Coin.coinPool.Get(pos, rot);
-					toUse.transform.SetParent(segment.collectibleTransform, true);
-				}
-
-				
+				toUse = Coin.coinPool.Get(pos, rot);
+				toUse.transform.SetParent(segment.collectibleTransform, true);
 			}
-
 			currentWorldPos += increment;
 		}
 

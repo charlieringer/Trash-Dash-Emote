@@ -25,18 +25,15 @@ public class Missile : Obstacle
 		m_Audio = GetComponent<AudioSource>();
 	}
 
-	public override void Spawn(TrackSegment segment, float t)
+	public override void Spawn(TrackSegment segment, float t, int l)
 	{
-        int lane = Random.Range(k_LeftMostLaneIndex, k_RightMostLaneIndex + 1);
-		lane = 1;
-
 		Vector3 position;
 		Quaternion rotation;
 		segment.GetPointAt(t, out position, out rotation);
 
 		GameObject obj = Instantiate(gameObject, position, rotation);
 		obj.transform.SetParent(segment.objectRoot, true);
-		obj.transform.position += obj.transform.right * lane * segment.manager.laneOffset;
+		obj.transform.position += obj.transform.right * l * segment.manager.laneOffset;
 
 		obj.transform.forward = -obj.transform.forward;
 

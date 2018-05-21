@@ -51,6 +51,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Affdex\Examples\Scripts\Listener.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\AffdexUnityUtils.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\AndroidNativePlatform.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\CameraInput.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\DebugFeatureViewer.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\Detector.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\Expressions.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\Face.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\Frame.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\ImageResultsListener.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\iOSNativePlatform.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\NativePlatform.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\OSXNativePlatform.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\VideoFileInput.cs" />
+     <Compile Include="Assets\Affdex\Plugins\Scripts\WindowsNativePlatform.cs" />
      <Compile Include="Assets\AssetBundleManager\AssetBundleLoadOperation.cs" />
      <Compile Include="Assets\AssetBundleManager\AssetBundleManager.cs" />
      <Compile Include="Assets\AssetBundleManager\Utility.cs" />
@@ -115,13 +130,21 @@
      <Compile Include="Assets\Scripts\UI\StartButton.cs" />
      <Compile Include="Assets\Scripts\WorldCurver.cs" />
      <None Include="Assets\Shaders\CurvedRotation.shader" />
+     <None Include="Assets\StreamingAssets\affdex-data-3\haarcascade\004_lbp_15stage.xml" />
+     <None Include="Assets\StreamingAssets\affdex-data-osx\haarcascade\haarcascade_frontalface_alt2.xml" />
      <None Include="Assets\Link.xml" />
      <None Include="Assets\Shaders\VertexColor.shader" />
      <None Include="Assets\Shaders\CurvedCode.cginc" />
      <None Include="Assets\Shaders\CurvedUnlit.shader" />
+     <None Include="Assets\StreamingAssets\affdex-data-ios\haarcascade\haarcascade_frontalface_alt2.xml" />
+     <None Include="Assets\StreamingAssets\affdex-data-3\fileList.txt" />
      <None Include="Assets\INSTRUCTIONS.txt" />
+     <None Include="Assets\StreamingAssets\affdex-data-osx\haarcascade\004_lbp_15stage.xml" />
      <None Include="Assets\Shaders\CurvedUnlitCloud.shader" />
+     <None Include="Assets\StreamingAssets\affdex-data-3\README.txt" />
+     <None Include="Assets\StreamingAssets\affdex-data-ios\haarcascade\004_lbp_15stage.xml" />
      <None Include="Assets\Shaders\UnlitBlinking.shader" />
+     <None Include="Assets\StreamingAssets\affdex-data-3\haarcascade\haarcascade_frontalface_alt2.xml" />
      <None Include="Assets\Shaders\CurvedUnlitAlpha.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

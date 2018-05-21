@@ -51,11 +51,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Affdex\Plugins\Editor\DetectorEditor.cs" />
      <Compile Include="Assets\AssetBundleManager\Editor\AssetbundlesMenuItems.cs" />
      <Compile Include="Assets\AssetBundleManager\Editor\BuildScript.cs" />
      <Compile Include="Assets\AssetBundleManager\Editor\ExecuteInternalMono.cs" />
      <Compile Include="Assets\AssetBundleManager\Editor\LaunchAssetBundleServer.cs" />
-     <Compile Include="Assets\Editor\BundleAndBuild.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

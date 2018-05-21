@@ -17,9 +17,12 @@ public class TrackSegment : MonoBehaviour
 
     public Obstacle[] possibleObstacles;
 
-    [HideInInspector]
-    public float[] obstaclePositions;
+	public bool hasLowBarrier;
+	public bool hasHighBarrier;
 
+	public int[] obstaclesPresent;
+
+	public int coinLane;
     public float worldLength { get { return m_WorldLength; } }
 
     protected float m_WorldLength;
@@ -92,73 +95,5 @@ public class TrackSegment : MonoBehaviour
 
 		Destroy(gameObject);
 	}
-
-#if UNITY_EDITOR
-    void OnDrawGizmos()
-    {
-        if (pathParent == null)
-            return;
-
-        Color c = Gizmos.color;
-        Gizmos.color = Color.red;
-        for (int i = 1; i < pathParent.childCount; ++i)
-        {
-            Transform orig = pathParent.GetChild(i - 1);
-            Transform end = pathParent.GetChild(i);
-
-            Gizmos.DrawLine(orig.position, end.position);
-        }
-
-        Gizmos.color = Color.blue;
-        for (int i = 0; i < obstaclePositions.Length; ++i)
-        {
-            Vector3 pos;
-            Quaternion rot;
-            GetPointAt(obstaclePositions[i], out pos, out rot);
-            Gizmos.DrawSphere(pos, 0.5f);
-        }
-
-        Gizmos.color = c;
-    }
-#endif
 }
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(TrackSegment))]
-class TrackSegmentEditor : Editor
-{
-    protected TrackSegment m_Segment;
-
-    public void OnEnable()
-    {
-        m_Segment = target as TrackSegment;
-    }
-
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
-
-        if (GUILayout.Button("Add obstacles"))
-        {
-            ArrayUtility.Add(ref m_Segment.obstaclePositions, 0.0f);
-        }
-
-        if (m_Segment.obstaclePositions != null)
-        {
-            int toremove = -1;
-            for (int i = 0; i < m_Segment.obstaclePositions.Length; ++i)
-            {
-                GUILayout.BeginHorizontal();
-                m_Segment.obstaclePositions[i] = EditorGUILayout.Slider(m_Segment.obstaclePositions[i], 0.0f, 1.0f);
-                if (GUILayout.Button("-", GUILayout.MaxWidth(32)))
-                    toremove = i;
-                GUILayout.EndHorizontal();
-            }
-
-            if (toremove != -1)
-                ArrayUtility.RemoveAt(ref m_Segment.obstaclePositions, toremove);
-        }
-    }
-}
-
-#endif
