@@ -37,7 +37,6 @@ public class LoadoutState : AState
 
 	[Header("Other Data")]
 	public Leaderboard leaderboard;
-    public MissionUI missionPopup;
 	public Button runButton;
 
 	public MeshFilter skyMeshFilter;

@@ -220,8 +220,6 @@ public class TrackManager : MonoBehaviour
 
             Coin.coinPool = new Pooler(currentTheme.collectiblePrefab, k_StartingCoinPoolSize);
 
-            PlayerData.instance.StartRunMissions(this);
-
         }
 
         characterController.Begin();
@@ -414,8 +412,6 @@ public class TrackManager : MonoBehaviour
             PlayerData.instance.rank += 1;
             PlayerData.instance.Save();
         }
-
-        PlayerData.instance.UpdateMissions(this);
         MusicPlayer.instance.UpdateVolumes(speedRatio);
     }
 

@@ -43,7 +43,6 @@ public class PlayerData
     public List<string> themes = new List<string>();                // Owned themes.
     public int usedTheme;                                           // Currently used theme.
     public List<HighscoreEntry> highscores = new List<HighscoreEntry>();
-    public List<MissionBase> missions = new List<MissionBase>();
 
 	public string previousName = "Trash Cat";
 
@@ -103,73 +102,9 @@ public class PlayerData
         characterAccessories.Add(name);
     }
 
-    // Mission management
 
-    // Will add missions until we reach 2 missions.
-    public void CheckMissionsCount()
-    {
-        while (missions.Count < 2)
-            AddMission();
-    }
 
-    public void AddMission()
-    {
-        int val = Random.Range(0, (int)MissionBase.MissionType.MAX);
-        
-        MissionBase newMission = MissionBase.GetNewMissionFromType((MissionBase.MissionType)val);
-        newMission.Created();
-
-        missions.Add(newMission);
-    }
-
-    public void StartRunMissions(TrackManager manager)
-    {
-        for(int i = 0; i < missions.Count; ++i)
-        {
-            missions[i].RunStart(manager);
-        }
-    }
-
-    public void UpdateMissions(TrackManager manager)
-    {
-        for(int i = 0; i < missions.Count; ++i)
-        {
-            missions[i].Update(manager);
-        }
-    }
-
-    public bool AnyMissionComplete()
-    {
-        for (int i = 0; i < missions.Count; ++i)
-        {
-            if (missions[i].isComplete) return true;
-        }
-
-        return false;
-    }
-
-    public void ClaimMission(MissionBase mission)
-    {        
-        premium += mission.reward;
-        
-#if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
-        AnalyticsEvent.ItemAcquired(
-            AcquisitionType.Premium, // Currency type
-            "mission",               // Context
-            mission.reward,          // Amount
-            "anchovies",             // Item ID
-            premium,                 // Item balance
-            "consumable",            // Item type
-            rank.ToString()          // Level
-        );
-#endif
-        
-        missions.Remove(mission);
-
-        CheckMissionsCount();
-
-        Save();
-    }
+    
 
 	// High Score management
 
@@ -223,15 +158,12 @@ public class PlayerData
             // If not we create one with default data.
 			NewSave();
         }
-
-        m_Instance.CheckMissionsCount();
     }
 
 	static public void NewSave()
 	{
 		m_Instance.characters.Clear();
 		m_Instance.themes.Clear();
-		m_Instance.missions.Clear();
 		m_Instance.characterAccessories.Clear();
 		m_Instance.consumables.Clear();
 
@@ -247,8 +179,6 @@ public class PlayerData
 
         m_Instance.ftueLevel = 0;
         m_Instance.rank = 0;
-
-        m_Instance.CheckMissionsCount();
 
 		m_Instance.Save();
 	}
@@ -332,26 +262,7 @@ public class PlayerData
 				highscores.Add(entry);
 			}
 		}
-
-        // Added missions.
-        if(ver >= 4)
-        {
-            missions.Clear();
-
-            int count = r.ReadInt32();
-            for(int i = 0; i < count; ++i)
-            {
-                MissionBase.MissionType type = (MissionBase.MissionType)r.ReadInt32();
-                MissionBase tempMission = MissionBase.GetNewMissionFromType(type);
-
-                tempMission.Deserialize(r);
-
-                if (tempMission != null)
-                {
-                    missions.Add(tempMission);
-                }
-            }
-        }
+			
 
         // Added highscore previous name used.
 		if(ver >= 7)
@@ -426,14 +337,7 @@ public class PlayerData
 			w.Write(highscores[i].name);
 			w.Write(highscores[i].score);
 		}
-
-        // Write missions.
-        w.Write(missions.Count);
-        for(int i = 0; i < missions.Count; ++i)
-        {
-            w.Write((int)missions[i].GetMissionType());
-            missions[i].Serialize(w);
-        }
+			
 
 		// Write name.
 		w.Write(previousName);

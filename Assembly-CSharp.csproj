@@ -93,7 +93,6 @@
      <Compile Include="Assets\Scripts\GameManager\Modifier.cs" />
      <Compile Include="Assets\Scripts\Helpers.cs" />
      <Compile Include="Assets\Scripts\LevelLoader.cs" />
-     <Compile Include="Assets\Scripts\Missions\Missions.cs" />
      <Compile Include="Assets\Scripts\Obstacles\AllLaneObstacle.cs" />
      <Compile Include="Assets\Scripts\Obstacles\Missile.cs" />
      <Compile Include="Assets\Scripts\Obstacles\Obstacle.cs" />
@@ -109,13 +108,10 @@
      <Compile Include="Assets\Scripts\Themes\ThemeDatabase.cs" />
      <Compile Include="Assets\Scripts\Tracks\TrackManager.cs" />
      <Compile Include="Assets\Scripts\Tracks\TrackSegment.cs" />
-     <Compile Include="Assets\Scripts\UI\AdsForMission.cs" />
      <Compile Include="Assets\Scripts\UI\HighscoreUI.cs" />
      <Compile Include="Assets\Scripts\UI\Leaderboard.cs" />
      <Compile Include="Assets\Scripts\UI\LicenceDisplayer.cs" />
      <Compile Include="Assets\Scripts\UI\MainMenu.cs" />
-     <Compile Include="Assets\Scripts\UI\MissionEntry.cs" />
-     <Compile Include="Assets\Scripts\UI\MissionUI.cs" />
      <Compile Include="Assets\Scripts\UI\PowerupIcon.cs" />
      <Compile Include="Assets\Scripts\UI\Settings\DataDeleteConfirmation.cs" />
      <Compile Include="Assets\Scripts\UI\Settings\SettingPopup.cs" />
