@@ -27,11 +27,6 @@ public class GameOverState : AState
 
 
 		scoreText.text = "SCORE: " + trackManager.score.ToString();
-//
-//        if (PlayerData.instance.AnyMissionComplete())
-//            missionPopup.Open();
-//        else
-//            missionPopup.gameObject.SetActive(false);
 
 		m_CoinCredited = false;
 

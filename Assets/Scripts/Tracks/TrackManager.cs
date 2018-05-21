@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
 #endif
@@ -118,6 +119,11 @@ public class TrackManager : MonoBehaviour
 	private int playerID;
 	private bool isAdaptive = true;
 
+	public Text idText;
+	public Text adaptiveText;
+
+	private int currentGame = 0;
+
     protected void Awake()
 	{
         m_ScoreAccum = 0.0f;
@@ -173,6 +179,23 @@ public class TrackManager : MonoBehaviour
 
 	public void Begin()
 	{
+		numbSegsMade = 0;
+		currentGame++;
+		playerID = int.Parse (idText.text);
+		isAdaptive = int.Parse (adaptiveText.text) == 1;
+
+		if (currentGame == 1) {
+			using (System.IO.StreamWriter file = 
+				      new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_summary.csv"), true)) {
+				file.WriteLine ("Game, Valence, Engagement\n");
+			}
+			using (System.IO.StreamWriter file = 
+				new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_all.csv"), true)) {
+				file.WriteLine ("Game, Section, Valence, Engagement\n");
+			}
+		}
+
+
 		if (!m_Rerun)
 		{
 			if (m_TrackSeed != -1)
@@ -270,6 +293,12 @@ public class TrackManager : MonoBehaviour
 
 		currentSectionEngagementValues.Add (emotionListener.currentEngagement);
 		currentSectionValenceValues.Add (emotionListener.currentValence);
+
+		using (System.IO.StreamWriter file = 
+			new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_all.csv"), true)) {
+			file.WriteLine (currentGame + "," + numbSegsMade + "," + emotionListener.currentValence + "," + emotionListener.currentEngagement + " /n");
+
+		}
 
         while (m_Segments.Count < k_DesiredSegmentCount)
 		{
@@ -484,13 +513,13 @@ public class TrackManager : MonoBehaviour
 		//TEST CODE FOR WRITING TO CSV
 		string outString= "";
 
-		outString += totalVal + "," + totalEng;
+		outString += currentGame + "," + totalVal + "," + totalEng;
 		outString += "\n";
 
 
 
 		using (System.IO.StreamWriter file = 
-			new System.IO.StreamWriter("Data.csv", true))
+			new System.IO.StreamWriter((playerID + "_" + int.Parse (adaptiveText.text) + ".csv"), true))
 		{
 			file.WriteLine(outString);
 		}

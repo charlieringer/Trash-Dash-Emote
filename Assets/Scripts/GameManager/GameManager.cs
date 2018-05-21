@@ -52,21 +52,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    protected void OnApplicationQuit()
-    {
-#if UNITY_ANALYTICS
-        // We are exiting during game, so this make this invalid, send an event to log it
-        // NOTE : this is only called on standalone build, as on mobile this function isn't called
-        bool inGameExit = m_StateStack[m_StateStack.Count - 1].GetType() == typeof(GameState);
-
-        Analytics.CustomEvent("user_end_session", new Dictionary<string, object>
-        {
-            { "force_exit", inGameExit },
-            { "timer", Time.realtimeSinceStartup }
-        });
-#endif
-    }
-
     // State management
     public void SwitchState(string newState)
     {

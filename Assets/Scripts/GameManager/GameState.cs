@@ -2,12 +2,6 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-#if UNITY_ADS
-using UnityEngine.Advertisements;
-#endif
-#if UNITY_ANALYTICS
-using UnityEngine.Analytics;
-#endif
 
 /// <summary>
 /// Pushed on top of the GameManager during gameplay. Takes care of initializing all the UI and start the TrackManager
@@ -86,7 +80,7 @@ public class GameState : AState
         m_AdsInitialised = false;
         m_GameoverSelectionDone = false;
 
-        StartGame();
+		StartGame();
     }
 
     public override void Exit(AState to)
@@ -101,7 +95,7 @@ public class GameState : AState
         canvas.gameObject.SetActive(true);
         pauseMenu.gameObject.SetActive(false);
         wholeUI.gameObject.SetActive(true);
-        //pauseButton.gameObject.SetActive(true);
+
         gameOverPopup.SetActive(false);
 
         if (!trackManager.isRerun)
