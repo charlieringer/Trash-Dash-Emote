@@ -3913,7 +3913,6 @@ MonoBehaviour:
   accesoryNameDisplay: {fileID: 0}
   accessoryIconDisplay: {fileID: 0}
   leaderboard: {fileID: 1815696064}
-  missionPopup: {fileID: 0}
   runButton: {fileID: 1393864684}
   skyMeshFilter: {fileID: 1222759691}
   UIGroundFilter: {fileID: 0}
@@ -10335,6 +10334,8 @@ MonoBehaviour:
   parallaxRoot: {fileID: 1617204952}
   parallaxRatio: 0.8
   emotionListener: {fileID: 1928974149}
+  idText: {fileID: 318817332}
+  adaptiveText: {fileID: 822352532}
 --- !u!4 &1958487561
 Transform:
   m_ObjectHideFlags: 0

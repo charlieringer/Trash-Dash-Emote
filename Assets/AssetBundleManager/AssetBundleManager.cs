@@ -85,10 +85,10 @@ namespace AssetBundles
 	
 		private static void Log(LogType logType, string text)
 		{
-			if (logType == LogType.Error)
-				Debug.LogError("[AssetBundleManager] " + text);
-			else if (s_LogMode == LogMode.All)
-				Debug.Log("[AssetBundleManager] " + text);
+			//if (logType == LogType.Error)
+				//Debug.LogError("[AssetBundleManager] " + text);
+			//else if (s_LogMode == LogMode.All)
+				//Debug.Log("[AssetBundleManager] " + text);
 		}
 	
 #if UNITY_EDITOR

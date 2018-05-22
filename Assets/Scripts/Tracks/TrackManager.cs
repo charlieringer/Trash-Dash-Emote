@@ -110,7 +110,7 @@ public class TrackManager : MonoBehaviour
     protected const float k_Acceleration = 0.2f;
 
 	//UCB1 Stuff
-	private float[,] exploreWeights;
+	private int[,] exploreWeights;
 	private float[,] exploitWeights;
 
 	private List<float> currentSectionEngagementValues = new List<float>();
@@ -124,19 +124,22 @@ public class TrackManager : MonoBehaviour
 
 	private int currentGame = 0;
 
+	private int currentSegmentID = 0;
+	private int segmentsPassed = 0;
+
     protected void Awake()
 	{
         m_ScoreAccum = 0.0f;
 		s_Instance = this;
 
 		int numbTrackSections = m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length;
-		exploreWeights = new float[numbTrackSections,numbTrackSections];
+		exploreWeights = new int[numbTrackSections,numbTrackSections];
 		exploitWeights = new float[numbTrackSections,numbTrackSections];
 
 		for (int i = 0; i < numbTrackSections; i++) {
 			for (int j = 0; j < numbTrackSections; j++) {
 				exploreWeights [i,j] = 1;
-				exploitWeights [i,j] = 1;
+				exploitWeights [i,j] = 0;
 			}
 		}
     }
@@ -181,16 +184,16 @@ public class TrackManager : MonoBehaviour
 	{
 		numbSegsMade = 0;
 		currentGame++;
-		playerID = int.Parse (idText.text);
-		isAdaptive = int.Parse (adaptiveText.text) == 1;
+		playerID = idText.text == "" ? 999 : int.Parse (idText.text);
+		isAdaptive = adaptiveText.text == "" ? true : int.Parse (adaptiveText.text) == 1;
 
 		if (currentGame == 1) {
 			using (System.IO.StreamWriter file = 
-				      new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_summary.csv"), true)) {
+				      new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_summary.csv"), true)) {
 				file.WriteLine ("Game, Valence, Engagement\n");
 			}
 			using (System.IO.StreamWriter file = 
-				new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_all.csv"), true)) {
+				new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_all.csv"), true)) {
 				file.WriteLine ("Game, Section, Valence, Engagement\n");
 			}
 		}
@@ -294,9 +297,10 @@ public class TrackManager : MonoBehaviour
 		currentSectionEngagementValues.Add (emotionListener.currentEngagement);
 		currentSectionValenceValues.Add (emotionListener.currentValence);
 
+
 		using (System.IO.StreamWriter file = 
-			new System.IO.StreamWriter ((playerID + "_" + int.Parse (adaptiveText.text) + "_all.csv"), true)) {
-			file.WriteLine (currentGame + "," + numbSegsMade + "," + emotionListener.currentValence + "," + emotionListener.currentEngagement + " /n");
+			new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_all.csv"), true)) {
+			file.WriteLine (currentGame + "," + numbSegsMade + "," + emotionListener.currentValence + "," + emotionListener.currentEngagement + "\n");
 
 		}
 
@@ -341,11 +345,12 @@ public class TrackManager : MonoBehaviour
 		if(m_CurrentSegmentDistance > m_Segments[0].worldLength)
 		{
 			m_CurrentSegmentDistance -= m_Segments[0].worldLength;
-
+			segmentsPassed++;
 			// m_PastSegments are segment we already passed, we keep them to move them and destroy them later 
 			// but they aren't part of the game anymore 
 			updateExploitScoreForSegement(m_Segments[0]);
 			m_PastSegments.Add(m_Segments[0]);
+
 			m_Segments.RemoveAt(0);
 
 		}
@@ -453,10 +458,11 @@ public class TrackManager : MonoBehaviour
 	public void SpawnNewSegment()
 	{
 		numbSegsMade++;
-		int segmentUse = getNextSegment();
+		m_PreviousSegment = currentSegmentID;
+		currentSegmentID = getNextSegment();
 		//if (segmentUse == m_PreviousSegment) segmentUse = (segmentUse + 1) % m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length;
 		//segmentUse = 7;
-		TrackSegment segmentToUse = m_CurrentThemeData.zones[m_CurrentZone].prefabList[segmentUse];
+		TrackSegment segmentToUse = m_CurrentThemeData.zones[m_CurrentZone].prefabList[currentSegmentID];
 		TrackSegment newSegment = Instantiate(segmentToUse, Vector3.zero, Quaternion.identity);
 
 		Vector3 currentExitPoint;
@@ -495,44 +501,88 @@ public class TrackManager : MonoBehaviour
 
 	public int getNextSegment()
 	{
-
-		float totalVal = 0f;
-		foreach(float val in currentSectionValenceValues)
-		{
-			totalVal+=val;
-		}
-		totalVal /= currentSectionValenceValues.Count;
-
-		float totalEng = 0f;
-		foreach(float eng in currentSectionEngagementValues)
-		{
-			totalEng+=eng;
-		}
-		totalEng /= currentSectionEngagementValues.Count;
-
-		//TEST CODE FOR WRITING TO CSV
-		string outString= "";
-
-		outString += currentGame + "," + totalVal + "," + totalEng;
-		outString += "\n";
-
-
-
-		using (System.IO.StreamWriter file = 
-			new System.IO.StreamWriter((playerID + "_" + int.Parse (adaptiveText.text) + ".csv"), true))
-		{
-			file.WriteLine(outString);
+		if (!isAdaptive)
+			return Random.Range (0, m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length);
+		int totalExplore = 0;
+		for(int i = 0; i <  m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length; i++) {
+			totalExplore += exploreWeights[currentSegmentID, i];
 		}
 
+		List<int> possibleIndexs = new List<int>();
+		float bestScore = -1f;
 
 
-		currentSectionValenceValues = new List<float> ();
-		return Random.Range(0, m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length);
+		for (int i = 0; i <  m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length; i++) {
+			float score = exploitWeights[currentSegmentID, i] + (Mathf.Sqrt(2) * Mathf.Sqrt(Mathf.Log(totalExplore)/exploreWeights[currentSegmentID, i]));
+			if (score > bestScore) {
+				bestScore = score;
+				possibleIndexs.Clear ();
+				possibleIndexs.Add (i);
+			} else if (score == bestScore) {
+				possibleIndexs.Add (i);
+			}
+		}
+
+		int nextSegment = possibleIndexs [Random.Range (0, possibleIndexs.Count)];
+		print ("Current segement " + currentSegmentID +  " Best next segment: " + nextSegment + " with score of: " + bestScore);
+		return nextSegment;//return a random best index
 	}
 
 	public void updateExploitScoreForSegement(TrackSegment s)
 	{
+		//Don't update if we are on a safe segment
+		if (segmentsPassed < 3)
+			return; 
+		float newScore = getCurrentScore();
+		float oldScore = exploitWeights [m_PreviousSegment, currentSegmentID] * exploreWeights [m_PreviousSegment, currentSegmentID];
+
+
+		float score = exploreWeights [m_PreviousSegment, currentSegmentID] == 0 ? newScore : (oldScore + newScore) / (exploreWeights [m_PreviousSegment, currentSegmentID] + 1);
+		exploitWeights [m_PreviousSegment, currentSegmentID] = score;
+		exploreWeights [m_PreviousSegment, currentSegmentID] += 1;
+
 		return; 
+	}
+
+	public float getCurrentScore()
+	{
+		float totalVal = 0f;
+		foreach (float val in currentSectionValenceValues) {
+			totalVal += val;
+		}
+		totalVal /= currentSectionValenceValues.Count;
+
+
+		float totalEng = 0f;
+		foreach (float eng in currentSectionEngagementValues) {
+			totalEng += eng;
+		}
+		totalEng /= currentSectionEngagementValues.Count;
+
+		//TEST CODE FOR WRITING TO CSV
+		string outString = "";
+
+		outString += currentGame + "," + totalVal + "," + totalEng;
+		outString += "\n";
+
+		using (System.IO.StreamWriter file = 
+			new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_summary.csv"), true)) {
+			file.WriteLine (outString);
+		}
+
+		currentSectionValenceValues = new List<float> ();
+		currentSectionEngagementValues = new List<float> ();
+
+		totalVal = (totalVal + 100) / 2; //rescale values this will be between 0-100
+		totalEng = (totalEng + 100) / 2; //rescale values this will be between 50-100 (because eng is between 0-100 but we want a center at 50)
+
+		float total = (totalVal + totalEng)-100; //Now the summed values are between -50 - 100 (but we can "assume" it is between -100 - 100, 0 Val and 0 Eng = 0 in this scale)
+
+
+		total = 1 / (1 + Mathf.Exp (-0.1f * total)); //We use a funky logistic function so that to a few sig figs we scale from 0 - 1 with 0 in = 0.5 out)
+		return total;
+
+
 	}
 
 

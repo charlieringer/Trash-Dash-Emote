@@ -196,18 +196,8 @@ public class GameState : AState
 
 	public void Pause()
 	{
-		//check if we aren't finished OR if we aren't already in pause (as that would mess states)
-		if (m_Finished || AudioListener.pause == true)
-			return;
+		return;
 
-		AudioListener.pause = true;
-		Time.timeScale = 0;
-
-		pauseButton.gameObject.SetActive(false);
-        pauseMenu.gameObject.SetActive (true);
-		wholeUI.gameObject.SetActive(false);
-		m_WasMoving = trackManager.isMoving;
-		trackManager.StopMove();
 	}
 
 	public void Resume()
