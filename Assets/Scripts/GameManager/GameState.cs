@@ -277,13 +277,8 @@ public class GameState : AState
         Shader.SetGlobalFloat("_BlinkingValue", 0.0f);
 
         yield return new WaitForSeconds(2.0f);
-        if (currentModifier.OnRunEnd(this))
-        {
-           // if (trackManager.isRerun)
-                manager.SwitchState("GameOver");
-           // else
-            //    OpenGameOverPopup();
-        }
+
+        manager.SwitchState("GameOver");
 	}
 
     protected void ClearPowerup()
@@ -298,105 +293,4 @@ public class GameState : AState
 
         m_PowerupIcons.Clear();
     }
-
-    public void OpenGameOverPopup()
-    {
-        premiumForLifeButton.interactable = PlayerData.instance.premium >= 3;
-
-        premiumCurrencyOwned.text = PlayerData.instance.premium.ToString();
-
-        ClearPowerup();
-
-        gameOverPopup.SetActive(true);
-    }
-
-    public void GameOver()
-    {
-        manager.SwitchState("GameOver");
-    }
-
-    public void PremiumForLife()
-    {
-        //This check avoid a bug where the video AND premium button are released on the same frame.
-        //It lead to the ads playing and then crashing the game as it try to start the second wind again.
-        //Whichever of those function run first will take precedence
-        if (m_GameoverSelectionDone)
-            return;
-
-        m_GameoverSelectionDone = true;
-
-        PlayerData.instance.premium -= 3;
-        SecondWind();
-    }
-
-    public void SecondWind()
-    {
-        trackManager.characterController.currentLife = 1;
-        trackManager.isRerun = true;
-        StartGame();
-    }
-
-    public void ShowRewardedAd()
-    {
-        if (m_GameoverSelectionDone)
-            return;
-
-        m_GameoverSelectionDone = true;
-
-#if UNITY_ADS
-        if (Advertisement.IsReady(adsPlacementId))
-        {
-#if UNITY_ANALYTICS
-            AnalyticsEvent.AdStart(adsRewarded, adsNetwork, adsPlacementId, new Dictionary<string, object>
-            {
-                { "level_index", PlayerData.instance.rank },
-                { "distance", TrackManager.instance == null ? 0 : TrackManager.instance.worldDistance },
-            });
-#endif
-            var options = new ShowOptions { resultCallback = HandleShowResult };
-            Advertisement.Show(adsPlacementId, options);
-        }
-        else
-        {
-#if UNITY_ANALYTICS
-            AnalyticsEvent.AdSkip(adsRewarded, adsNetwork, adsPlacementId, new Dictionary<string, object> {
-                { "error", Advertisement.GetPlacementState(adsPlacementId).ToString() }
-            });
-#endif
-        }
-#else
-		GameOver();
-#endif
-    }
-
-    //=== AD
-#if UNITY_ADS
-
-    private void HandleShowResult(ShowResult result)
-    {
-        switch (result)
-        {
-            case ShowResult.Finished:
-#if UNITY_ANALYTICS
-                AnalyticsEvent.AdComplete(adsRewarded, adsNetwork, adsPlacementId);
-#endif
-                SecondWind();
-                break;
-            case ShowResult.Skipped:
-                Debug.Log("The ad was skipped before reaching the end.");
-#if UNITY_ANALYTICS
-                AnalyticsEvent.AdSkip(adsRewarded, adsNetwork, adsPlacementId);
-#endif
-                break;
-            case ShowResult.Failed:
-                Debug.LogError("The ad failed to be shown.");
-#if UNITY_ANALYTICS
-                AnalyticsEvent.AdSkip(adsRewarded, adsNetwork, adsPlacementId, new Dictionary<string, object> {
-                    { "error", "failed" }
-                });
-#endif
-                break;
-        }
-    }
-#endif
 }

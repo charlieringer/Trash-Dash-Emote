@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Affdex;
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
 #endif
@@ -113,8 +114,7 @@ public class TrackManager : MonoBehaviour
 	private int[,] exploreWeights;
 	private float[,] exploitWeights;
 
-	private List<float> currentSectionEngagementValues = new List<float>();
-	private List<float> currentSectionValenceValues = new List<float>();
+	private List<float>[] currentSectionEmotionValues = new List<float>[9];
 
 	private int playerID;
 	private bool isAdaptive = true;
@@ -126,6 +126,20 @@ public class TrackManager : MonoBehaviour
 
 	private int currentSegmentID = 0;
 	private int segmentsPassed = 0;
+
+	private string allDataOut = "";
+	private string summaryDataOut = "";
+
+	private int[] keysPressed = new int[2];
+
+	private bool trippedThisSegment = false;
+
+	private int sectionStartCoinScore0 = 0;
+	private int sectionStartCoinScore1 = 0;
+
+	private List<int> numCoinsPerSection = new List<int> ();
+	private float previousCoinCollectionPercentage = 0f;
+
 
     protected void Awake()
 	{
@@ -141,6 +155,9 @@ public class TrackManager : MonoBehaviour
 				exploreWeights [i,j] = 1;
 				exploitWeights [i,j] = 0;
 			}
+		}
+		for (int i = 0; i < currentSectionEmotionValues.Length; i++) {
+			currentSectionEmotionValues [i] = new List<float> ();
 		}
     }
 
@@ -183,18 +200,22 @@ public class TrackManager : MonoBehaviour
 	public void Begin()
 	{
 		numbSegsMade = 0;
+		segmentsPassed = 0;
 		currentGame++;
 		playerID = idText.text == "" ? 999 : int.Parse (idText.text);
 		isAdaptive = adaptiveText.text == "" ? true : int.Parse (adaptiveText.text) == 1;
 
+		allDataOut = playerID + "_" + isAdaptive + "_all.csv";
+		summaryDataOut = playerID + "_" + isAdaptive + "_summary.csv";
+
 		if (currentGame == 1) {
 			using (System.IO.StreamWriter file = 
-				      new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_summary.csv"), true)) {
-				file.WriteLine ("Game, Valence, Engagement\n");
+				new System.IO.StreamWriter ((summaryDataOut), true)) {
+				file.WriteLine ("Game, Section, PieceID, NextID, UCTScore, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement\n");
 			}
 			using (System.IO.StreamWriter file = 
-				new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_all.csv"), true)) {
-				file.WriteLine ("Game, Section, Valence, Engagement\n");
+				new System.IO.StreamWriter ((allDataOut), true)) {
+				file.WriteLine ("Game, Section, PieceID, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement\n");
 			}
 		}
 
@@ -293,15 +314,25 @@ public class TrackManager : MonoBehaviour
 
 	void Update ()
 	{
+		if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+		{
+			keysPressed [1]++;
+		}
+		//Update the full frame by frame emotion values
+		for (int i = 0; i < 9; i++) {
+			currentSectionEmotionValues[i].Add(emotionListener.currentEmotions[(Emotions)i]);
+		}
 
-		currentSectionEngagementValues.Add (emotionListener.currentEngagement);
-		currentSectionValenceValues.Add (emotionListener.currentValence);
+		string outString = currentGame + "," + (segmentsPassed+1) + "," + currentSegmentID + ",";
 
+		foreach (var emotion in emotionListener.currentEmotions) {
+			outString += emotion.Value + ",";
+		}
+		outString += "\n";
 
 		using (System.IO.StreamWriter file = 
-			new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_all.csv"), true)) {
-			file.WriteLine (currentGame + "," + numbSegsMade + "," + emotionListener.currentValence + "," + emotionListener.currentEngagement + "\n");
-
+			new System.IO.StreamWriter ((allDataOut), true)) {
+			file.WriteLine (outString);
 		}
 
         while (m_Segments.Count < k_DesiredSegmentCount)
@@ -501,8 +532,7 @@ public class TrackManager : MonoBehaviour
 
 	public int getNextSegment()
 	{
-		if (!isAdaptive)
-			return Random.Range (0, m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length);
+
 		int totalExplore = 0;
 		for(int i = 0; i <  m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length; i++) {
 			totalExplore += exploreWeights[currentSegmentID, i];
@@ -524,7 +554,29 @@ public class TrackManager : MonoBehaviour
 		}
 
 		int nextSegment = possibleIndexs [Random.Range (0, possibleIndexs.Count)];
-		print ("Current segement " + currentSegmentID +  " Best next segment: " + nextSegment + " with score of: " + bestScore);
+
+		//print ("Current segement " + currentSegmentID +  " Best next segment: " + nextSegment + " with score of: " + bestScore);
+		string outString = currentGame + "," + (segmentsPassed) + "," + currentSegmentID + "," + nextSegment + "," + bestScore + ",";
+		foreach (List<float> emotions in currentSectionEmotionValues) {
+			float total = 0f;
+			foreach (float emotion in emotions) {
+				total += emotion;
+			}
+			total /= emotions.Count;
+			outString += total + ",";
+		}
+		outString += "\n";
+
+		if (segmentsPassed != 0) {
+			using (System.IO.StreamWriter file = 
+				      new System.IO.StreamWriter ((summaryDataOut), true)) {
+				file.WriteLine (outString);
+			}
+		}
+
+
+		if (!isAdaptive)
+			return Random.Range (0, m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length);
 		return nextSegment;//return a random best index
 	}
 
@@ -544,34 +596,41 @@ public class TrackManager : MonoBehaviour
 		return; 
 	}
 
+	public void updateExploitScoreForSegement_GBPEM(TrackSegment s)
+	{
+		//Don't update if we are on a safe segment
+		if (segmentsPassed < 3)
+			return; 
+		float newScore = getCurrentScore();
+		float oldScore = exploitWeights [m_PreviousSegment, currentSegmentID] * exploreWeights [m_PreviousSegment, currentSegmentID];
+
+
+		float score = exploreWeights [m_PreviousSegment, currentSegmentID] == 0 ? newScore : (oldScore + newScore) / (exploreWeights [m_PreviousSegment, currentSegmentID] + 1);
+		exploitWeights [m_PreviousSegment, currentSegmentID] = score;
+		exploreWeights [m_PreviousSegment, currentSegmentID] += 1;
+
+		return; 
+	}
+
 	public float getCurrentScore()
 	{
 		float totalVal = 0f;
-		foreach (float val in currentSectionValenceValues) {
+		foreach (float val in currentSectionEmotionValues[7]) {
 			totalVal += val;
 		}
-		totalVal /= currentSectionValenceValues.Count;
+		totalVal /= currentSectionEmotionValues[7].Count;
 
 
 		float totalEng = 0f;
-		foreach (float eng in currentSectionEngagementValues) {
+		foreach (float eng in currentSectionEmotionValues[8]) {
 			totalEng += eng;
 		}
-		totalEng /= currentSectionEngagementValues.Count;
+		totalEng /= currentSectionEmotionValues[8].Count;
 
-		//TEST CODE FOR WRITING TO CSV
-		string outString = "";
-
-		outString += currentGame + "," + totalVal + "," + totalEng;
-		outString += "\n";
-
-		using (System.IO.StreamWriter file = 
-			new System.IO.StreamWriter ((playerID + "_" + isAdaptive + "_summary.csv"), true)) {
-			file.WriteLine (outString);
+		for(int i = 0; i < currentSectionEmotionValues.Length; i++)
+		{
+			currentSectionEmotionValues [i] = new List<float> ();
 		}
-
-		currentSectionValenceValues = new List<float> ();
-		currentSectionEngagementValues = new List<float> ();
 
 		totalVal = (totalVal + 100) / 2; //rescale values this will be between 0-100
 		totalEng = (totalEng + 100) / 2; //rescale values this will be between 50-100 (because eng is between 0-100 but we want a center at 50)
@@ -581,8 +640,30 @@ public class TrackManager : MonoBehaviour
 
 		total = 1 / (1 + Mathf.Exp (-0.1f * total)); //We use a funky logistic function so that to a few sig figs we scale from 0 - 1 with 0 in = 0.5 out)
 		return total;
+	}
+
+	public float getCurrentScore_GBPEM()
+	{
+		float total = 0f;
+
+		float keypressedScore = 0f;
+		if (!trippedThisSegment){
+			keypressedScore = 1f-(Mathf.Abs(4-(keysPressed [0] + keysPressed [1]))*0.25f);
+			if (keypressedScore > 1f)
+				keypressedScore = 1f;
+			if (keypressedScore < 0f)
+				keypressedScore = 0f;
+		}
+		total += keypressedScore;
 
 
+
+
+
+
+
+
+		return total;
 	}
 
 
@@ -638,7 +719,6 @@ public class TrackManager : MonoBehaviour
 			}
 			currentWorldPos += increment;
 		}
-
 	}
 
 
