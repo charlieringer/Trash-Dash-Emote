@@ -117,6 +117,7 @@ public class TrackManager : MonoBehaviour
 	private List<float>[] currentSectionEmotionValues = new List<float>[9];
 
 	private int playerID;
+	private int gameType;
 	private bool isAdaptive = true;
 
 	public Text idText;
@@ -134,11 +135,12 @@ public class TrackManager : MonoBehaviour
 
 	private bool trippedThisSegment = false;
 
-	private int sectionStartCoinScore0 = 0;
-	private int sectionStartCoinScore1 = 0;
+	private int sectionStartCoinScore = 0;
 
-	private List<int> numCoinsPerSection = new List<int> ();
-	private float previousCoinCollectionPercentage = 0f;
+	public List<int> numCoinsPerSection = new List<int> ();
+	private float previousCoinCollectionPercentage = 1f;
+
+	private int prevSectionLife;
 
 
     protected void Awake()
@@ -199,14 +201,16 @@ public class TrackManager : MonoBehaviour
 
 	public void Begin()
 	{
+		prevSectionLife = characterController.currentLife;
 		numbSegsMade = 0;
 		segmentsPassed = 0;
 		currentGame++;
 		playerID = idText.text == "" ? 999 : int.Parse (idText.text);
-		isAdaptive = adaptiveText.text == "" ? true : int.Parse (adaptiveText.text) == 1;
+		gameType = adaptiveText.text == "" ? 1 : int.Parse (adaptiveText.text);
+		isAdaptive = gameType != 0;
 
-		allDataOut = playerID + "_" + isAdaptive + "_all.csv";
-		summaryDataOut = playerID + "_" + isAdaptive + "_summary.csv";
+		allDataOut = playerID + "_" + gameType + "_all.csv";
+		summaryDataOut = playerID + "_" + gameType + "_summary.csv";
 
 		if (currentGame == 1) {
 			using (System.IO.StreamWriter file = 
@@ -379,8 +383,16 @@ public class TrackManager : MonoBehaviour
 			segmentsPassed++;
 			// m_PastSegments are segment we already passed, we keep them to move them and destroy them later 
 			// but they aren't part of the game anymore 
-			updateExploitScoreForSegement(m_Segments[0]);
+			if (gameType == 1)
+				updateExploitScoreForSegement (m_Segments [0]);
+			else {
+				updateExploitScoreForSegement_GBPEM (m_Segments [0]);
+			}
+			sectionStartCoinScore = characterController.coins;
+			keysPressed [0] = keysPressed [1];
+			keysPressed [1] = 0;
 			m_PastSegments.Add(m_Segments[0]);
+
 
 			m_Segments.RemoveAt(0);
 
@@ -601,7 +613,7 @@ public class TrackManager : MonoBehaviour
 		//Don't update if we are on a safe segment
 		if (segmentsPassed < 3)
 			return; 
-		float newScore = getCurrentScore();
+		float newScore = getCurrentScore_GBPEM();
 		float oldScore = exploitWeights [m_PreviousSegment, currentSegmentID] * exploreWeights [m_PreviousSegment, currentSegmentID];
 
 
@@ -646,6 +658,7 @@ public class TrackManager : MonoBehaviour
 	{
 		float total = 0f;
 
+	
 		float keypressedScore = 0f;
 		if (!trippedThisSegment){
 			keypressedScore = 1f-(Mathf.Abs(4-(keysPressed [0] + keysPressed [1]))*0.25f);
@@ -656,13 +669,22 @@ public class TrackManager : MonoBehaviour
 		}
 		total += keypressedScore;
 
+		float maxCoinsCollected = numCoinsPerSection[0];
+		float coinscollected = characterController.coins - sectionStartCoinScore;
+		float percentCoinsCollected = coinscollected / maxCoinsCollected;
+		float avgPercentCoinsCollected = (percentCoinsCollected + previousCoinCollectionPercentage) / 2;
+		previousCoinCollectionPercentage = percentCoinsCollected;
 
+		total += avgPercentCoinsCollected;
 
+		float survivedScore = characterController.currentLife < prevSectionLife ? 0f : 1f;
+		prevSectionLife = characterController.currentLife;
 
+		total += survivedScore;
+		total /= 2;
 
-
-
-
+		//print ("Score: " + total + " coin score: " + avgPercentCoinsCollected + " coins collected " + coinscollected + "total coins " + maxCoinsCollected + " old percentage " + previousCoinCollectionPercentage  );
+		numCoinsPerSection.RemoveAt (0);
 		return total;
 	}
 
@@ -682,6 +704,7 @@ public class TrackManager : MonoBehaviour
 
 	public void SpawnCoinAndPowerup(TrackSegment segment)
 	{
+		int numCoinsSpawned = 0;
 		const float increment = 1.5f;
 		float currentWorldPos = 0.0f;
 		int currentLane = segment.GetComponent<TrackSegment>().coinLane;
@@ -716,9 +739,11 @@ public class TrackManager : MonoBehaviour
 			{
 				toUse = Coin.coinPool.Get(pos, rot);
 				toUse.transform.SetParent(segment.collectibleTransform, true);
+				numCoinsSpawned++;
 			}
 			currentWorldPos += increment;
 		}
+		numCoinsPerSection.Add (numCoinsSpawned);
 	}
 
 
