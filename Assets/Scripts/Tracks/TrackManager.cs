@@ -225,11 +225,11 @@ public class TrackManager : MonoBehaviour
 		if (currentGame == 1) {
 			using (System.IO.StreamWriter file = 
 				new System.IO.StreamWriter ((summaryDataOut), true)) {
-				file.WriteLine ("Game, Section, PieceID, NextID, UCTScore, ExploitScore, ExploreScore, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement, Game Score\n");
+				file.WriteLine ("Game, Section, Current_Section_ID, PCG_Section_ID, PCG_NextID, UCTScore, ExploitScore, ExploreScore, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement, Game Score\n");
 			}
 			using (System.IO.StreamWriter file = 
 				new System.IO.StreamWriter ((allDataOut), true)) {
-				file.WriteLine ("Game, Section, PieceID, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement\n");
+				file.WriteLine ("Game, Section, Current_Section_ID, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement\n");
 			}
 		}
 
@@ -585,7 +585,7 @@ public class TrackManager : MonoBehaviour
 		int nextSegment = unvisited.Count == 0 ? possibleIndexs [Random.Range (0, possibleIndexs.Count)] : unvisited [Random.Range (0, unvisited.Count)];
 
 		//print ("Current segement " + currentSegmentID +  " Best next segment: " + nextSegment + " with score of: " + bestScore);
-		string outString = currentGame + "," + (segmentsPassed) + "," + segmentIDs [segmentIDs.Count-1] + "," + nextSegment + "," + bestScore + "," + exploitWeights [segmentIDs [segmentIDs.Count-1], nextSegment] + ","+ (Mathf.Sqrt(Mathf.Log(totalExplore)/((float)exploreWeights[segmentIDs [segmentIDs.Count-1], nextSegment]+Mathf.Epsilon))) + ",";
+		string outString = currentGame + "," + (segmentsPassed) + "," + segmentIDs [0] + "," + segmentIDs [segmentIDs.Count-1] + "," + nextSegment + "," + bestScore + "," + exploitWeights [segmentIDs [segmentIDs.Count-1], nextSegment] + ","+ (Mathf.Sqrt(Mathf.Log(totalExplore)/((float)exploreWeights[segmentIDs [segmentIDs.Count-1], nextSegment]+Mathf.Epsilon))) + ",";
 		foreach (List<float> emotions in currentSectionEmotionValues) {
 			float total = 0f;
 			foreach (float emotion in emotions) {
@@ -651,9 +651,9 @@ public class TrackManager : MonoBehaviour
 		totalEng = (totalEng + 100) / 2; //rescale values this will be between 50-100 (because eng is between 0-100 but we want a center at 50)
 
 		float total = (totalVal + totalEng)-100; //Now the summed values are between -50 - 100 (but we can "assume" it is between -100 - 100, 0 Val and 0 Eng = 0 in this scale)
+		total *= 0.1f; //now between -5 - 10
 
-
-		total = 1 / (1 + Mathf.Exp (-0.1f * total)); //We use a funky logistic function so that to a few sig figs we scale from 0 - 1 with 0 in = 0.5 out)
+		total = 1 / (1 + Mathf.Exp (-total)); 
 		return total;
 	}
 
