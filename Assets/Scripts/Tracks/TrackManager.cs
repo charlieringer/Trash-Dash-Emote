@@ -125,7 +125,7 @@ public class TrackManager : MonoBehaviour
 
 	private int currentGame = 0;
 
-	private int currentSegmentID = 0;
+	//private int currentSegmentID = 0;
 	private int segmentsPassed = 0;
 
 	private string allDataOut = "";
@@ -138,6 +138,7 @@ public class TrackManager : MonoBehaviour
 	private int sectionStartCoinScore = 0;
 
 	public List<int> numCoinsPerSection = new List<int> ();
+	public List<int> segmentIDs = new List<int> ();
 	private float previousCoinCollectionPercentage = 1f;
 
 	private int prevSectionLife;
@@ -154,8 +155,8 @@ public class TrackManager : MonoBehaviour
 
 		for (int i = 0; i < numbTrackSections; i++) {
 			for (int j = 0; j < numbTrackSections; j++) {
-				exploreWeights [i,j] = 1;
-				exploitWeights [i,j] = 0;
+				exploreWeights [i,j] = 0;
+				exploitWeights [i,j] = 0f;
 			}
 		}
 		for (int i = 0; i < currentSectionEmotionValues.Length; i++) {
@@ -204,6 +205,15 @@ public class TrackManager : MonoBehaviour
 		prevSectionLife = characterController.currentLife;
 		numbSegsMade = 0;
 		segmentsPassed = 0;
+
+		keysPressed = new int[2];
+		trippedThisSegment = false;
+		sectionStartCoinScore = 0;
+		numCoinsPerSection = new List<int> ();
+		segmentIDs = new List<int> ();
+		previousCoinCollectionPercentage = 1f;
+		prevSectionLife = 3;
+
 		currentGame++;
 		playerID = idText.text == "" ? 999 : int.Parse (idText.text);
 		gameType = adaptiveText.text == "" ? 1 : int.Parse (adaptiveText.text);
@@ -215,7 +225,7 @@ public class TrackManager : MonoBehaviour
 		if (currentGame == 1) {
 			using (System.IO.StreamWriter file = 
 				new System.IO.StreamWriter ((summaryDataOut), true)) {
-				file.WriteLine ("Game, Section, PieceID, NextID, UCTScore, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement\n");
+				file.WriteLine ("Game, Section, PieceID, NextID, UCTScore, ExploitScore, ExploreScore, Joy, Fear, Disgust, Sadness,Anger, Suprise, Contempt, Valence, Engagement, Game Score\n");
 			}
 			using (System.IO.StreamWriter file = 
 				new System.IO.StreamWriter ((allDataOut), true)) {
@@ -327,7 +337,8 @@ public class TrackManager : MonoBehaviour
 			currentSectionEmotionValues[i].Add(emotionListener.currentEmotions[(Emotions)i]);
 		}
 
-		string outString = currentGame + "," + (segmentsPassed+1) + "," + currentSegmentID + ",";
+		int currentSeg = segmentIDs.Count > 0 ? segmentIDs [0] : -1;
+		string outString = currentGame + "," + (segmentsPassed+1) + "," + currentSeg + ",";
 
 		foreach (var emotion in emotionListener.currentEmotions) {
 			outString += emotion.Value + ",";
@@ -383,12 +394,15 @@ public class TrackManager : MonoBehaviour
 			segmentsPassed++;
 			// m_PastSegments are segment we already passed, we keep them to move them and destroy them later 
 			// but they aren't part of the game anymore 
-			if (gameType == 1)
-				updateExploitScoreForSegement (m_Segments [0]);
-			else {
-				updateExploitScoreForSegement_GBPEM (m_Segments [0]);
-			}
+
+			updateExploitScoreForSegement ();
+
 			sectionStartCoinScore = characterController.coins;
+
+
+			m_PreviousSegment = segmentIDs[0];
+			segmentIDs.RemoveAt (0);
+
 			keysPressed [0] = keysPressed [1];
 			keysPressed [1] = 0;
 			m_PastSegments.Add(m_Segments[0]);
@@ -501,11 +515,9 @@ public class TrackManager : MonoBehaviour
 	public void SpawnNewSegment()
 	{
 		numbSegsMade++;
-		m_PreviousSegment = currentSegmentID;
-		currentSegmentID = getNextSegment();
-		//if (segmentUse == m_PreviousSegment) segmentUse = (segmentUse + 1) % m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length;
-		//segmentUse = 7;
-		TrackSegment segmentToUse = m_CurrentThemeData.zones[m_CurrentZone].prefabList[currentSegmentID];
+		int nextSegmentID = getNextSegment();
+		segmentIDs.Add (nextSegmentID);
+		TrackSegment segmentToUse = m_CurrentThemeData.zones[m_CurrentZone].prefabList[nextSegmentID];
 		TrackSegment newSegment = Instantiate(segmentToUse, Vector3.zero, Quaternion.identity);
 
 		Vector3 currentExitPoint;
@@ -544,18 +556,23 @@ public class TrackManager : MonoBehaviour
 
 	public int getNextSegment()
 	{
-
+		if(numbSegsMade < k_DesiredSegmentCount)
+			return Random.Range (0, m_CurrentThemeData.zones [m_CurrentZone].prefabList.Length);
 		int totalExplore = 0;
+
 		for(int i = 0; i <  m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length; i++) {
-			totalExplore += exploreWeights[currentSegmentID, i];
+			totalExplore += exploreWeights[segmentIDs [segmentIDs.Count-1], i];
 		}
 
 		List<int> possibleIndexs = new List<int>();
-		float bestScore = -1f;
-
+		float bestScore = -0f;
+		List<int> unvisited = new List<int> ();
 
 		for (int i = 0; i <  m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length; i++) {
-			float score = exploitWeights[currentSegmentID, i] + (Mathf.Sqrt(2) * Mathf.Sqrt(Mathf.Log(totalExplore)/exploreWeights[currentSegmentID, i]));
+
+			float score = exploitWeights[segmentIDs [segmentIDs.Count-1], i] + (Mathf.Sqrt(2) * Mathf.Sqrt(Mathf.Log(totalExplore)/exploreWeights[segmentIDs [segmentIDs.Count-1], i]+Mathf.Epsilon));
+			if (exploreWeights [segmentIDs [segmentIDs.Count - 1], i] == 0)
+				unvisited.Add (i); //If we have not explored this we want to
 			if (score > bestScore) {
 				bestScore = score;
 				possibleIndexs.Clear ();
@@ -565,10 +582,10 @@ public class TrackManager : MonoBehaviour
 			}
 		}
 
-		int nextSegment = possibleIndexs [Random.Range (0, possibleIndexs.Count)];
+		int nextSegment = unvisited.Count == 0 ? possibleIndexs [Random.Range (0, possibleIndexs.Count)] : unvisited [Random.Range (0, unvisited.Count)];
 
 		//print ("Current segement " + currentSegmentID +  " Best next segment: " + nextSegment + " with score of: " + bestScore);
-		string outString = currentGame + "," + (segmentsPassed) + "," + currentSegmentID + "," + nextSegment + "," + bestScore + ",";
+		string outString = currentGame + "," + (segmentsPassed) + "," + segmentIDs [segmentIDs.Count-1] + "," + nextSegment + "," + bestScore + "," + exploitWeights [segmentIDs [segmentIDs.Count-1], nextSegment] + ","+ (Mathf.Sqrt(Mathf.Log(totalExplore)/((float)exploreWeights[segmentIDs [segmentIDs.Count-1], nextSegment]+Mathf.Epsilon))) + ",";
 		foreach (List<float> emotions in currentSectionEmotionValues) {
 			float total = 0f;
 			foreach (float emotion in emotions) {
@@ -577,7 +594,7 @@ public class TrackManager : MonoBehaviour
 			total /= emotions.Count;
 			outString += total + ",";
 		}
-		outString += "\n";
+		outString += score +  "\n";
 
 		if (segmentsPassed != 0) {
 			using (System.IO.StreamWriter file = 
@@ -592,37 +609,23 @@ public class TrackManager : MonoBehaviour
 		return nextSegment;//return a random best index
 	}
 
-	public void updateExploitScoreForSegement(TrackSegment s)
+	public void updateExploitScoreForSegement()
 	{
 		//Don't update if we are on a safe segment
 		if (segmentsPassed < 3)
 			return; 
-		float newScore = getCurrentScore();
-		float oldScore = exploitWeights [m_PreviousSegment, currentSegmentID] * exploreWeights [m_PreviousSegment, currentSegmentID];
+		
+		float newScore = (gameType == 1) ? getCurrentScore () : getCurrentScore_GBPEM ();
+		float oldScore = exploitWeights [m_PreviousSegment, segmentIDs [0]] * exploreWeights [m_PreviousSegment, segmentIDs [0]];
 
 
-		float score = exploreWeights [m_PreviousSegment, currentSegmentID] == 0 ? newScore : (oldScore + newScore) / (exploreWeights [m_PreviousSegment, currentSegmentID] + 1);
-		exploitWeights [m_PreviousSegment, currentSegmentID] = score;
-		exploreWeights [m_PreviousSegment, currentSegmentID] += 1;
-
-		return; 
-	}
-
-	public void updateExploitScoreForSegement_GBPEM(TrackSegment s)
-	{
-		//Don't update if we are on a safe segment
-		if (segmentsPassed < 3)
-			return; 
-		float newScore = getCurrentScore_GBPEM();
-		float oldScore = exploitWeights [m_PreviousSegment, currentSegmentID] * exploreWeights [m_PreviousSegment, currentSegmentID];
-
-
-		float score = exploreWeights [m_PreviousSegment, currentSegmentID] == 0 ? newScore : (oldScore + newScore) / (exploreWeights [m_PreviousSegment, currentSegmentID] + 1);
-		exploitWeights [m_PreviousSegment, currentSegmentID] = score;
-		exploreWeights [m_PreviousSegment, currentSegmentID] += 1;
+		float score = exploreWeights [m_PreviousSegment, segmentIDs [0]] == 0 ? newScore : (oldScore + newScore) / (exploreWeights [m_PreviousSegment, segmentIDs [0]] + 1);
+		exploitWeights [m_PreviousSegment, segmentIDs [0]] = score;
+		exploreWeights [m_PreviousSegment, segmentIDs [0]] += 1;
 
 		return; 
 	}
+
 
 	public float getCurrentScore()
 	{
@@ -658,7 +661,6 @@ public class TrackManager : MonoBehaviour
 	{
 		float total = 0f;
 
-	
 		float keypressedScore = 0f;
 		if (!trippedThisSegment){
 			keypressedScore = 1f-(Mathf.Abs(4-(keysPressed [0] + keysPressed [1]))*0.25f);
@@ -681,8 +683,8 @@ public class TrackManager : MonoBehaviour
 		prevSectionLife = characterController.currentLife;
 
 		total += survivedScore;
-		total /= 2;
-
+		total /= 3;
+		print (total);
 		//print ("Score: " + total + " coin score: " + avgPercentCoinsCollected + " coins collected " + coinscollected + "total coins " + maxCoinsCollected + " old percentage " + previousCoinCollectionPercentage  );
 		numCoinsPerSection.RemoveAt (0);
 		return total;
