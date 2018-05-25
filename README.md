@@ -20,12 +20,12 @@ This project, as provided here, requires Unity (2017) to run. Load this project 
 
 This project is inspired by the principals of Experience-Driven PCG [1].
 
-## PCG as a Bandit Problem 
+### PCG as a Bandit Problem 
 
-## Visual Model of Affect
-For the visual model of player affect the players webcam is used along with the Affdex tool to model player emotion. Each frame the game stores the Valence and Engagement scores and then, when a section has been completed, these values are averaged, rescaled, and the 
+### Visual Model of Affect
+For the visual model of player affect the players webcam is used along with the Affdex tool to model player emotion. Each frame the game stores the Valence and Engagement scores and then, when a section has been completed, these values are averaged, rescaled and summed to a range between -5 - 10 (this is loopsided because valence is scored from -100 - 100 and engagement is scored from 0 - 100). This values is then passed into a logistic function to transform it non-linearly into a values between 0 and 1. This non-linear transformation is required because often the values whilst playing games hover around 0 or have generally low values and therefore the reward would not change much for these. The average of these scores, bound bwtween 0 - 1, is then used as the exploit meassure in the UCB1 function described above. 
 
-## Game-Play Based Model of Affect
+### Game-Play Based Model of Affect
 Another approach is to the model the players experience through game play meassures. In the case of Trash Dash Emote this is carried out by tracking three features - numbers of keys pressed, percentage of coins collected, and if the player 'tripped' (lost a life) or not. Each of these are summed and scaled so that the maximum reward is 1 and the minimum is 0. This is then plugges straight into the exploit variable in the UCB1 function. 
 
 It is interesting to discuss the number of keys pressed as a measure of experience. A game where no keys are required to be pressed is trivially easy and therefore no-fun whereas a game where there are a lot of keys to be pressed in a short time is complicated and difficult and therefore unfun. In order to choose the 'optimal' number of keys to pressed the game was played many times and a number, 2 per section, was chosen emerically as feeling 'about right'. Therefore the score for the amount of keys pressed give maximum reward if 4 keys were pressed over the two segments considered as less reward as the number of keys moves away from this. 
