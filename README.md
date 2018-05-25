@@ -53,9 +53,7 @@ The system requires a lot of game play, at least 196 peices of track but realist
 
 There are also two major issues with this Bandit-based PCG design:
  - Delayed Evaluation - Content if generated a long time before the player experiences it and therefore it is possible that a player can die before evlauation. This means that certain track pieces are not experienced until long into the game.
-- Repeated Sections – If Section A -> Section A is the “best” it will be generated a lot before experienced because track sections are generated ~10 pieces ahead
-
-
+- Repeated Sections – If Section A -> Section A is seen as the “best” segment it will be generated a lot before these content is experienced and therefore evaluated. This causes long periods of very boring and same-y game play.
 
 ## Demo
 A demo can be seen at https://youtu.be/Gz30Z6CmeFE
