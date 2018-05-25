@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using Affdex;
-#if UNITY_ANALYTICS
-using UnityEngine.Analytics;
-#endif
 
 /// <summary>
 /// The TrackManager handles creating track segments, moving them and handling the whole pace of the game.
@@ -25,6 +22,8 @@ using UnityEngine.Analytics;
 /// </summary>
 public class TrackManager : MonoBehaviour
 {
+	public Character characterPreFab;
+	public ThemeData theme;
 	int numbSegsMade = 0;
 	static public TrackManager instance { get { return s_Instance; } }
 	static protected TrackManager s_Instance;
@@ -146,6 +145,7 @@ public class TrackManager : MonoBehaviour
 
     protected void Awake()
 	{
+		m_CurrentThemeData = theme;
         m_ScoreAccum = 0.0f;
 		s_Instance = this;
 
@@ -248,12 +248,9 @@ public class TrackManager : MonoBehaviour
             characterController.gameObject.SetActive(true);
 
             // Spawn the player
-            Character player = Instantiate(CharacterDatabase.GetCharacter(PlayerData.instance.characters[PlayerData.instance.usedCharacter]), Vector3.zero, Quaternion.identity);
+			Character player = Instantiate(characterPreFab, Vector3.zero, Quaternion.identity);
 			player.transform.SetParent(characterController.characterCollider.transform, false);
 			Camera.main.transform.SetParent(characterController.transform, true);
-
-
-            player.SetupAccesory(PlayerData.instance.usedAccessory);
 
 			characterController.character = player;
 			characterController.trackManager = this;
@@ -261,7 +258,7 @@ public class TrackManager : MonoBehaviour
 			characterController.Init();
 			characterController.CheatInvincible(invincible);
 
-            m_CurrentThemeData = ThemeDatabase.GetThemeData(PlayerData.instance.themes[PlayerData.instance.usedTheme]);
+            m_CurrentThemeData = theme;
 			m_CurrentZone = 0;
 			m_CurrentZoneDistance = 0;
 
@@ -317,12 +314,7 @@ public class TrackManager : MonoBehaviour
 			Destroy (parallaxRoot.GetChild(i).gameObject);
 		}
 
-		//if our consumable wasn't used, we put it back in our inventory
-		if (characterController.inventory != null) 
-		{
-            PlayerData.instance.Add(characterController.inventory.GetConsumableType());
-			characterController.inventory = null;
-		}
+
 	}
 
 
@@ -334,7 +326,10 @@ public class TrackManager : MonoBehaviour
 		}
 		//Update the full frame by frame emotion values
 		for (int i = 0; i < 9; i++) {
-			currentSectionEmotionValues[i].Add(emotionListener.currentEmotions[(Emotions)i]);
+			if (emotionListener.currentEmotions.ContainsKey ((Emotions)i))
+				currentSectionEmotionValues [i].Add (emotionListener.currentEmotions [(Emotions)i]);
+			else
+				currentSectionEmotionValues [i].Add (-1);
 		}
 
 		int currentSeg = segmentIDs.Count > 0 ? segmentIDs [0] : -1;
@@ -495,14 +490,7 @@ public class TrackManager : MonoBehaviour
                 m_Multiplier = part(m_Multiplier);
             }
         }
-
-        //check for next rank achieved
-        int currentTarget = (PlayerData.instance.rank + 1) * 300;
-        if(m_TotalWorldDistance > currentTarget)
-        {
-            PlayerData.instance.rank += 1;
-            PlayerData.instance.Save();
-        }
+			
         MusicPlayer.instance.UpdateVolumes(speedRatio);
     }
 

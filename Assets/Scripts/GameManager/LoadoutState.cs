@@ -2,9 +2,6 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-#if UNITY_ANALYTICS
-using UnityEngine.Analytics;
-#endif
 
 /// <summary>
 /// State pushed on the GameManager during the Loadout, when player select player, theme and accessories
@@ -36,7 +33,6 @@ public class LoadoutState : AState
 	public Image accessoryIconDisplay;
 
 	[Header("Other Data")]
-	public Leaderboard leaderboard;
 	public Button runButton;
 
 	public MeshFilter skyMeshFilter;
@@ -89,13 +85,6 @@ public class LoadoutState : AState
         runButton.interactable = false;
         runButton.GetComponentInChildren<Text>().text = "Loading...";
 
-        if(m_PowerupToUse != Consumable.ConsumableType.NONE)
-        {
-            //if we come back from a run and we don't have any more of the powerup we wanted to use, we reset the powerup to use to NONE
-            if (!PlayerData.instance.consumables.ContainsKey(m_PowerupToUse) || PlayerData.instance.consumables[m_PowerupToUse] == 0)
-                m_PowerupToUse = Consumable.ConsumableType.NONE;
-        }
-
         Refresh();
     }
 
@@ -120,7 +109,6 @@ public class LoadoutState : AState
 
 			if (m_PowerupToUse != Consumable.ConsumableType.NONE)
 			{
-				PlayerData.instance.Consume(m_PowerupToUse);
                 Consumable inv = Instantiate(ConsumableDatabase.GetConsumbale(m_PowerupToUse));
                 inv.gameObject.SetActive(false);
                 gs.trackManager.characterController.inventory = inv;
@@ -130,7 +118,6 @@ public class LoadoutState : AState
 
     public void Refresh()
     {
-		PopulatePowerup();
 
         StartCoroutine(PopulateCharacters());
         StartCoroutine(PopulateTheme());
@@ -167,17 +154,6 @@ public class LoadoutState : AState
         UnityEngine.SceneManagement.SceneManager.LoadScene(k_ShopSceneName, UnityEngine.SceneManagement.LoadSceneMode.Additive);
 	}
 
-    public void ChangeCharacter(int dir)
-    {
-        PlayerData.instance.usedCharacter += dir;
-        if (PlayerData.instance.usedCharacter >= PlayerData.instance.characters.Count)
-            PlayerData.instance.usedCharacter = 0;
-        else if(PlayerData.instance.usedCharacter < 0)
-            PlayerData.instance.usedCharacter = PlayerData.instance.characters.Count-1;
-
-        StartCoroutine(PopulateCharacters());
-    }
-
     public void ChangeAccessory(int dir)
     {
         m_UsedAccessory += dir;
@@ -185,24 +161,6 @@ public class LoadoutState : AState
             m_UsedAccessory = -1;
         else if (m_UsedAccessory < -1)
             m_UsedAccessory = m_OwnedAccesories.Count-1;
-
-        if (m_UsedAccessory != -1)
-            PlayerData.instance.usedAccessory = m_OwnedAccesories[m_UsedAccessory];
-        else
-            PlayerData.instance.usedAccessory = -1;
-
-        SetupAccessory();
-    }
-
-    public void ChangeTheme(int dir)
-    {
-        PlayerData.instance.usedTheme += dir;
-        if (PlayerData.instance.usedTheme >= PlayerData.instance.themes.Count)
-            PlayerData.instance.usedTheme = 0;
-        else if (PlayerData.instance.usedTheme < 0)
-            PlayerData.instance.usedTheme = PlayerData.instance.themes.Count - 1;
-
-        StartCoroutine(PopulateTheme());
     }
 
     public IEnumerator PopulateTheme()
@@ -211,7 +169,7 @@ public class LoadoutState : AState
 
         while (t == null)
         {
-            t = ThemeDatabase.GetThemeData(PlayerData.instance.themes[PlayerData.instance.usedTheme]);
+            t = ThemeDatabase.GetThemeData("default");
             yield return null;
         }
 
@@ -225,7 +183,7 @@ public class LoadoutState : AState
     public IEnumerator PopulateCharacters()
     {
 		//accessoriesSelector.gameObject.SetActive(false);
-        PlayerData.instance.usedAccessory = -1;
+
         m_UsedAccessory = -1;
 
         if (!m_IsLoadingCharacter)
@@ -234,7 +192,7 @@ public class LoadoutState : AState
             GameObject newChar = null;
             while (newChar == null)
             {
-                Character c = CharacterDatabase.GetCharacter(PlayerData.instance.characters[PlayerData.instance.usedCharacter]);
+                Character c = CharacterDatabase.GetCharacter("cat");
 
                 if (c != null)
                 {
@@ -243,10 +201,7 @@ public class LoadoutState : AState
                     {
 						// Check which accessories we own.
                         string compoundName = c.characterName + ":" + c.accessories[i].accessoryName;
-                        if (PlayerData.instance.characterAccessories.Contains(compoundName))
-                        {
-                            m_OwnedAccesories.Add(i);
-                        }
+
                     }
 						
 
@@ -269,85 +224,12 @@ public class LoadoutState : AState
                     //That avoid an ugly "T-pose" flash time
                     yield return new WaitForEndOfFrame();
                     m_Character.transform.localPosition = Vector3.zero;
-
-                    SetupAccessory();
                 }
                 else
                     yield return new WaitForSeconds(1.0f);
             }
             m_IsLoadingCharacter = false;
         }
-	}
-
-    void SetupAccessory()
-    {
-//        Character c = m_Character.GetComponent<Character>();
-//        c.SetupAccesory(PlayerData.instance.usedAccessory);
-
-//        if (PlayerData.instance.usedAccessory == -1)
-//        {
-//            //accesoryNameDisplay.text = "None";
-//			accessoryIconDisplay.enabled = false;
-//		}
-//        else
-//        {
-//			accessoryIconDisplay.enabled = true;
-//			accesoryNameDisplay.text = c.accessories[PlayerData.instance.usedAccessory].accessoryName;
-//			accessoryIconDisplay.sprite = c.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
-//        }
-    }
-
-	void PopulatePowerup()
-	{
-		//powerupIcon.gameObject.SetActive(true);
-
-        if (PlayerData.instance.consumables.Count > 0)
-        {
-            Consumable c = ConsumableDatabase.GetConsumbale(m_PowerupToUse);
-
-            powerupSelect.gameObject.SetActive(true);
-            if (c != null)
-            {
-                powerupIcon.sprite = c.icon;
-                powerupCount.text = PlayerData.instance.consumables[m_PowerupToUse].ToString();
-            }
-            else
-            {
-                powerupIcon.sprite = noItemIcon;
-                powerupCount.text = "";
-            }
-        }
-        else
-        {
-           // powerupSelect.gameObject.SetActive(false);
-        }
-	}
-
-	public void ChangeConsumable(int dir)
-	{
-		bool found = false;
-		do
-		{
-			m_UsedPowerupIndex += dir;
-			if(m_UsedPowerupIndex >= (int)Consumable.ConsumableType.MAX_COUNT)
-			{
-				m_UsedPowerupIndex = 0; 
-			}
-			else if(m_UsedPowerupIndex < 0)
-			{
-				m_UsedPowerupIndex = (int)Consumable.ConsumableType.MAX_COUNT - 1;
-			}
-
-			int count = 0;
-			if(PlayerData.instance.consumables.TryGetValue((Consumable.ConsumableType)m_UsedPowerupIndex, out count) && count > 0)
-			{
-				found = true;
-			}
-
-		} while (m_UsedPowerupIndex != 0 && !found);
-
-		m_PowerupToUse = (Consumable.ConsumableType)m_UsedPowerupIndex;
-		PopulatePowerup();
 	}
 
 	public void SetModifier(Modifier modifier)
@@ -357,19 +239,8 @@ public class LoadoutState : AState
 
     public void StartGame()
     {
-        if(PlayerData.instance.ftueLevel == 1)
-        {
-            PlayerData.instance.ftueLevel = 2;
-            PlayerData.instance.Save();
-        }
-
         manager.SwitchState("Game");
     }
 
-	public void Openleaderboard()
-	{
-		leaderboard.displayPlayer = false;
-		leaderboard.forcePlayerDisplay = false;
-		leaderboard.Open();
-    }
+
 }

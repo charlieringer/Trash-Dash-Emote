@@ -30,7 +30,6 @@ public class GameOverState : AState
 
 		m_CoinCredited = false;
 
-		CreditCoins();
 
 		if (MusicPlayer.instance.GetStem(0) != gameOverTheme)
 		{
@@ -73,65 +72,13 @@ public class GameOverState : AState
         trackManager.isRerun = false;
         manager.SwitchState("Game");
     }
-
-    protected void CreditCoins()
-	{
-		if (m_CoinCredited)
-			return;
-
-		// -- give coins gathered
-		PlayerData.instance.coins += trackManager.characterController.coins;
-		PlayerData.instance.premium += trackManager.characterController.premium;
-
-		PlayerData.instance.Save();
-
-#if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
-        var transactionId = System.Guid.NewGuid().ToString();
-        var transactionContext = "gameplay";
-        var level = PlayerData.instance.rank.ToString();
-        var itemType = "consumable";
-        
-        if (trackManager.characterController.coins > 0)
-        {
-            AnalyticsEvent.ItemAcquired(
-                AcquisitionType.Soft, // Currency type
-                transactionContext,
-                trackManager.characterController.coins,
-                "fishbone",
-                PlayerData.instance.coins,
-                itemType,
-                level,
-                transactionId
-            );
-        }
-
-        if (trackManager.characterController.premium > 0)
-        {
-            AnalyticsEvent.ItemAcquired(
-                AcquisitionType.Premium, // Currency type
-                transactionContext,
-                trackManager.characterController.premium,
-                "anchovies",
-                PlayerData.instance.premium,
-                itemType,
-                level,
-                transactionId
-            );
-        }
-#endif 
-
-        m_CoinCredited = true;
-	}
-
+		
 	protected void FinishRun()
     {
-
 
         CharacterCollider.DeathEvent de = trackManager.characterController.characterCollider.deathData;
         //register data to analytics
 
-
-        PlayerData.instance.Save();
 
         trackManager.End();
     }

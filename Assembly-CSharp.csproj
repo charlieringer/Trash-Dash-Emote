@@ -69,7 +69,6 @@
      <Compile Include="Assets\AssetBundleManager\AssetBundleLoadOperation.cs" />
      <Compile Include="Assets\AssetBundleManager\AssetBundleManager.cs" />
      <Compile Include="Assets\AssetBundleManager\Utility.cs" />
-     <Compile Include="Assets\Scripts\AssetBundlesDatabaseHandler.cs" />
      <Compile Include="Assets\Scripts\Characters\Character.cs" />
      <Compile Include="Assets\Scripts\Characters\CharacterAccessories.cs" />
      <Compile Include="Assets\Scripts\Characters\CharacterCollider.cs" />
@@ -99,7 +98,6 @@
      <Compile Include="Assets\Scripts\Obstacles\PatrollingObstacle.cs" />
      <Compile Include="Assets\Scripts\Obstacles\SimpleBarricade.cs" />
      <Compile Include="Assets\Scripts\OpenURL.cs" />
-     <Compile Include="Assets\Scripts\PlayerData.cs" />
      <Compile Include="Assets\Scripts\Pooler.cs" />
      <Compile Include="Assets\Scripts\Sounds\AssignOutputChannel.cs" />
      <Compile Include="Assets\Scripts\Sounds\CountdownSound.cs" />
@@ -109,21 +107,8 @@
      <Compile Include="Assets\Scripts\Tracks\TrackManager.cs" />
      <Compile Include="Assets\Scripts\Tracks\TrackSegment.cs" />
      <Compile Include="Assets\Scripts\UI\HighscoreUI.cs" />
-     <Compile Include="Assets\Scripts\UI\Leaderboard.cs" />
-     <Compile Include="Assets\Scripts\UI\LicenceDisplayer.cs" />
      <Compile Include="Assets\Scripts\UI\MainMenu.cs" />
      <Compile Include="Assets\Scripts\UI\PowerupIcon.cs" />
-     <Compile Include="Assets\Scripts\UI\Settings\DataDeleteConfirmation.cs" />
-     <Compile Include="Assets\Scripts\UI\Settings\SettingPopup.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\IAPHandler.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopAccessoriesList.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopCharacterList.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopItemList.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopItemListItem.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopList.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopThemeList.cs" />
-     <Compile Include="Assets\Scripts\UI\Shop\ShopUI.cs" />
-     <Compile Include="Assets\Scripts\UI\StartButton.cs" />
      <Compile Include="Assets\Scripts\WorldCurver.cs" />
      <None Include="Assets\Shaders\CurvedRotation.shader" />
      <None Include="Assets\StreamingAssets\affdex-data-3\haarcascade\004_lbp_15stage.xml" />
