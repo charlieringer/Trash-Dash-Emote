@@ -45,15 +45,16 @@ The Summary file output one row each time a new track peice is generated (at the
 
 ## Development
 
+
 ## Reflections and Limitations
-Affdex model is very poor, responds better to posed emotions
-Lead to using a logistic function to shape the reward
-Resulted in the game-play based model
+During development I noticed that the Affdex model is not sensitive to the emotions of game players. This is mostly because players often do not have a very strong display of emotions. Using a logstic function was desinged to aid this but ultimately I felt that it was worth experiementing with different models, hence the game-play based one.
+
+The system requires a lot of game play, at least 196 peices of track but realistically more, to evaluation each peice ones. This means the player needs to play for a long time before the system starts generated adapted content. Furthermore because this project was built from an example game designed to highlight all of the Unity features there is a large amount of cruft which seems to cause performance issues. It is possible that in future creating something from scratch would have been easier but the use of prebuilt assets does lend a polished feel to the game. 
+
 Two major issues with this Bandit-based PCG design:
 Delayed Evaluation - Players can die before experiencing generated content meaning some content is  rarely tested
 Repeated Sections – If Section A -> Section A is the “best” it will be generated a lot before experienced because track sections are generated ~10 pieces ahead
-Requires 196+ track sections played to start working (realistically  210+)
-A lot of cruft resulting in poor performance
+
 
 
 ## Demo
