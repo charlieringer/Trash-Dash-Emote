@@ -25,7 +25,9 @@ As mentioned above there are 14 track section. For each track peice I am interes
 
 Once we have PCG modelled in this way we can used the UCB1 function to learn the best explotation and exploration parameters for each of these bandits. UCB1 has the form: 
 
-![ucb1](https://latex.codecogs.com/gif.latex?%5Cbar%7Bx_i%7D%20&plus;%20c%5Csqrt%7B%5Cfrac%7B%5Cln%7B%28N_i%29%7D%7D%7Bn_i%7D%7D)
+<p align="center">
+<img src="https://latex.codecogs.com/gif.latex?%5Cbar%7Bx_i%7D%20&plus;%20c%5Csqrt%7B%5Cfrac%7B%5Cln%7B%28N_i%29%7D%7D%7Bn_i%7D%7D">
+  </p>
 
 In this project we consider average player experience, as modelled below to be the exploitation parameter, and retain the same exploration parameter. 
 
