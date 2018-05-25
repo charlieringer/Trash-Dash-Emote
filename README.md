@@ -4,13 +4,14 @@ Trash Dash Emote is a game built for part 2 of the IGGI Game Development trainin
 
 It is a endless runner built/hacked from an example Unity games called Trash Dash. Trash Dash Emote has three modes, one where the game level is generated randomly and two where the level is generated based on the players affective state.  
 
-Whilst this work was developed for a training module is purpose, as designed, is to be used in an experiement. As such there are various game modes, each providing a different PCG method. The game also outputs data about the players emotions each frame as well as thr average values when the PCG generator is run.
+Whilst this work was developed for a training module is purpose, as designed, is to be used in an experiement. As such there are various game modes, each providing a different PCG method. The game also outputs data about the players emotions each frame as well as the average values when the PCG generator is run. This should give a researcher, interested in this area of PCG, a game which can be used "as is" to run an experiement and generate rich data about the player's experience. 
 
 ## Overview
 Trash Dash Emote features 14 hand-crafted track sections. Each of these represents one line of obstacles -  trash cans, barriers, rats etc. There are 3 game modes, Random, Visual, Gameplay-based.
 
 - In the Random mode (0) track peices are generated randomly, with no thought to which peices the player enjoys. 
-- In the Visual mode (1) the players webcam is used to track the emotions of the player 
+- In the Visual mode (1) the players webcam is used to track the players face. This data is then passed to the Affectiva Affdex library for emotion recognition. The results of this is then used to change the likelihood of track segements being generated
+- In the Gameplay-based mode (2) the track generation is adaptive as in the visual mode but in this case we score track peices based off in game metrics rather than the players visual display of emotion. 
 
 ## Experience Driven Procedrual Content Generation
 
@@ -29,6 +30,8 @@ It is interesting to discuss the number of keys pressed as a measure of experien
 ## Output Data
 
 ## Development
+
+## Reflections and Limitations
 
 ## References
 [1] Georgios N. Yannakakis and Julian Togelius. 2011. Experience-Driven Procedural Content Generation. IEEE Transactions on Affective Computing 2, 3.
