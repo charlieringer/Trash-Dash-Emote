@@ -17,7 +17,10 @@ This project is inspired by the principal of Experience-Driven PCG [1]
 
 ## Visual Model of Affect
 
-## Game- Play Based Model of Affect
+## Game-Play Based Model of Affect
+Another approach is to the model the players experience through game play meassures. In the case of Trash Dash Emote this is carried out by tracking three features - numbers of keys pressed, percentage of coins collected, and if the player 'tripped' (lost a life) or not. Each of these are summed and scaled so that the maximum reward is 1 and the minimum is 0. This is then plugges straight into the exploit variable in the UCB1 function. 
+
+It is interesting to discuss the number of keys pressed as a measure of experience. A game where no keys are required to be pressed is trivially easy and therefore no-fun whereas a game where there are a lot of keys to be pressed in a short time is complicated and difficult and therefore unfun. In order to choose the 'optimal' number of keys to pressed the game was played many times and a number, 2 per section, was chosen emerically as feeling 'about right'. Therefore the score for the amount of keys pressed give maximum reward if 4 keys were pressed over the two segments considered. 
 
 ## Development
 
