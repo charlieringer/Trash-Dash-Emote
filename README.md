@@ -13,6 +13,9 @@ Trash Dash Emote features 14 hand-crafted track sections. Each of these represen
 - In the Visual mode (1) the players webcam is used to track the players face. This data is then passed to the Affectiva Affdex library for emotion recognition. The results of this is then used to change the likelihood of track segements being generated
 - In the Gameplay-based mode (2) the track generation is adaptive as in the visual mode but in this case we score track peices based off in game metrics rather than the players visual display of emotion. 
 
+### Running the game
+This project, as provided here, requires Unity (2017) to run. Load this project as a Unity project and build. Builds have been tested for Mac but no other platforms. 
+
 ## Experience Driven Procedrual Content Generation
 
 This project is inspired by the principals of Experience-Driven PCG [1].
@@ -20,7 +23,7 @@ This project is inspired by the principals of Experience-Driven PCG [1].
 ## PCG as a Bandit Problem 
 
 ## Visual Model of Affect
-For the visual model of player affect the players webcam is used along with te 
+For the visual model of player affect the players webcam is used along with the Affdex tool to model player emotion. Each frame the game stores the Valence and Engagement scores and then, when a section has been completed, these values are averaged, rescaled, and the 
 
 ## Game-Play Based Model of Affect
 Another approach is to the model the players experience through game play meassures. In the case of Trash Dash Emote this is carried out by tracking three features - numbers of keys pressed, percentage of coins collected, and if the player 'tripped' (lost a life) or not. Each of these are summed and scaled so that the maximum reward is 1 and the minimum is 0. This is then plugges straight into the exploit variable in the UCB1 function. 
@@ -32,6 +35,9 @@ It is interesting to discuss the number of keys pressed as a measure of experien
 ## Development
 
 ## Reflections and Limitations
+
+## Demo
+A demo can be seen at https://youtu.be/Gz30Z6CmeFE
 
 ## References
 [1] Georgios N. Yannakakis and Julian Togelius. 2011. Experience-Driven Procedural Content Generation. IEEE Transactions on Affective Computing 2, 3.
