@@ -43,6 +43,16 @@ When a user plays the game 2 files are stored. A frame by frame file stores vari
 
 The Summary file output one row each time a new track piece is generated (at the end of a section) and details average affective values across the section as well out data about the best UCB1 values and which track pieces were generated. 
 
+## Development
+Development for this project was very fluid as there was only one person working on it and therefore no need to communicate and organise work between a team. It also meant that whenever work was blocked by a different task then the blocker and the blockee are the responsibility of the same person. Broadly the development was carried out in this manner:
+
+- Week 1: General research and designer regarding both the game and algorithm
+- Monday 21st - Game development, PCG hooks created, cruft removed
+- Tuesday 22nd - Visual model implemented and hooked up, some preliminary testing
+- Wednesday 23rd - Gameplay based model designed, implemented and hooked up, more testings
+- Thursday 24th -Tweaks, improvements, testing, data outputting and bug fixes
+- Friday 25th - Documentation and presentations
+
 ## Reflections and Limitations
 During development, I noticed that the Affdex model is not sensitive to the emotions of game players. This is mostly because players often do not have a very strong display of emotions. Using a logistic function was designed to aid this but ultimately I felt that it was worth experimenting with different models, hence the game-play based one.
 
