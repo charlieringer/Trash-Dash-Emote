@@ -51,9 +51,9 @@ During development I noticed that the Affdex model is not sensitive to the emoti
 
 The system requires a lot of game play, at least 196 peices of track but realistically more, to evaluation each peice ones. This means the player needs to play for a long time before the system starts generated adapted content. Furthermore because this project was built from an example game designed to highlight all of the Unity features there is a large amount of cruft which seems to cause performance issues. It is possible that in future creating something from scratch would have been easier but the use of prebuilt assets does lend a polished feel to the game. 
 
-Two major issues with this Bandit-based PCG design:
-Delayed Evaluation - Players can die before experiencing generated content meaning some content is  rarely tested
-Repeated Sections – If Section A -> Section A is the “best” it will be generated a lot before experienced because track sections are generated ~10 pieces ahead
+There are also two major issues with this Bandit-based PCG design:
+ - Delayed Evaluation - Content if generated a long time before the player experiences it and therefore it is possible that a player can die before evlauation. This means that certain track pieces are not experienced until long into the game.
+- Repeated Sections – If Section A -> Section A is the “best” it will be generated a lot before experienced because track sections are generated ~10 pieces ahead
 
 
 
