@@ -46,7 +46,7 @@ The Summary file output one row each time a new track piece is generated (at the
 ## Development
 Development for this project was very fluid as there was only one person working on it and therefore no need to communicate and organise work between a team. It also meant that whenever work was blocked by a different task then the blocker and the blockee are the responsibility of the same person. Broadly the development was carried out in this manner:
 
-- Week 1: General research and designer regarding both the game and algorithm
+- Week 1 - General research and designer regarding both the game and algorithm
 - Monday 21st - Game development, PCG hooks created, cruft removed
 - Tuesday 22nd - Visual model implemented and hooked up, some preliminary testing
 - Wednesday 23rd - Gameplay based model designed, implemented and hooked up, more testings
