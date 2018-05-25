@@ -4,23 +4,29 @@ Trash Dash Emote is a game built for part 2 of the IGGI Game Development trainin
 
 It is a endless runner built/hacked from an example Unity games called Trash Dash. Trash Dash Emote has three modes, one where the game level is generated randomly and two where the level is generated based on the players affective state.  
 
+Whilst this work was developed for a training module is purpose, as designed, is to be used in an experiement. As such there are various game modes, each providing a different PCG method. The game also outputs data about the players emotions each frame as well as thr average values when the PCG generator is run.
 
 ## Overview
-Trash Dash Emote features 14 hand-crafted track sections. Each of these represents one line of obstacles -  trash cans, barriers, rats etc.   
+Trash Dash Emote features 14 hand-crafted track sections. Each of these represents one line of obstacles -  trash cans, barriers, rats etc. There are 3 game modes, Random, Visual, Gameplay-based.
 
+- In the Random mode (0) track peices are generated randomly, with no thought to which peices the player enjoys. 
+- In the Visual mode (1) the players webcam is used to track the emotions of the player 
 
 ## Experience Driven Procedrual Content Generation
 
-This project is inspired by the principal of Experience-Driven PCG [1]
+This project is inspired by the principals of Experience-Driven PCG [1].
 
 ## PCG as a Bandit Problem 
 
 ## Visual Model of Affect
+For the visual model of player affect the players webcam is used along with te 
 
 ## Game-Play Based Model of Affect
 Another approach is to the model the players experience through game play meassures. In the case of Trash Dash Emote this is carried out by tracking three features - numbers of keys pressed, percentage of coins collected, and if the player 'tripped' (lost a life) or not. Each of these are summed and scaled so that the maximum reward is 1 and the minimum is 0. This is then plugges straight into the exploit variable in the UCB1 function. 
 
-It is interesting to discuss the number of keys pressed as a measure of experience. A game where no keys are required to be pressed is trivially easy and therefore no-fun whereas a game where there are a lot of keys to be pressed in a short time is complicated and difficult and therefore unfun. In order to choose the 'optimal' number of keys to pressed the game was played many times and a number, 2 per section, was chosen emerically as feeling 'about right'. Therefore the score for the amount of keys pressed give maximum reward if 4 keys were pressed over the two segments considered. 
+It is interesting to discuss the number of keys pressed as a measure of experience. A game where no keys are required to be pressed is trivially easy and therefore no-fun whereas a game where there are a lot of keys to be pressed in a short time is complicated and difficult and therefore unfun. In order to choose the 'optimal' number of keys to pressed the game was played many times and a number, 2 per section, was chosen emerically as feeling 'about right'. Therefore the score for the amount of keys pressed give maximum reward if 4 keys were pressed over the two segments considered as less reward as the number of keys moves away from this. 
+
+## Output Data
 
 ## Development
 
